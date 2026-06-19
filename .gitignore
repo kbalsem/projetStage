@@ -1,0 +1,16 @@
+# Environnement virtuel Python
+venv/
+
+# Cache Python
+__pycache__/
+*.pyc
+
+# Variables d'environnement
+.env
+
+# Documentation générée par MkDocs
+site/
+
+# Fichiers des IDE
+.idea/
+.vscode/

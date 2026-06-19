@@ -1,0 +1,49 @@
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Résultat de l'analyse</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Résultat de l'analyse</h1>
+
+    <div class="card">
+
+        <h2>Informations du dépôt</h2>
+
+        <p><strong>Nom :</strong> {{ repo_name }}</p>
+
+        <p><strong>Auteur :</strong> {{ author }}</p>
+
+        <p><strong>Branche principale :</strong> {{ branch }}</p>
+
+        <p><strong>Nombre de commits :</strong> {{ commits }}</p>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Documentation générée</h2>
+
+        <div class="documentation">
+            {{ documentation }}
+        </div>
+
+    </div>
+
+    <br>
+
+    <a href="/">
+        <button>Retour</button>
+    </a>
+
+</div>
+
+</body>
+</html>
+```
