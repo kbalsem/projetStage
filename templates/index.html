@@ -1,3 +1,5 @@
+<!--Cette partie est la 1ere etpe de projet : l'interface
+    -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -11,12 +13,13 @@
 
     <h1>Documentation Automatique de Dépôts Git</h1>
 
-    <form>
+    <form action="/analyser" method="POST" >
 
         <label>Chemin du dépôt Git</label>
 
         <input
             type="text"
+            name="url"
             placeholder="C:/Users/.../MonProjet">
 
         <button type="submit">
