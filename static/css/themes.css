@@ -1,0 +1,185 @@
+/* ═══════════════════════════════════════════════
+   themes.css — Thèmes Light/Dark Vibrants
+   ═══════════════════════════════════════════════ */
+
+/* ── Thème Light ── */
+[data-theme="light"] {
+    --background: #F8F7F2;
+    --surface: #FFFFFF;
+    --primary: #4F46E5;
+    --secondary: #F59E0B;
+    --accent: #1E1B4B;
+    --text-primary: #1E1B4B;
+    --text-secondary: #4B5563;
+    --text-muted: #6B7280;
+    --border: #E5E7EB;
+    --border-hover: #A5B4FC;
+    --nav-bg: rgba(248, 247, 242, 0.92);
+    --code-bg: #F3F4F6;
+    --input-bg: #FFFFFF;
+    --accent-bg: rgba(79, 70, 229, 0.10);
+    --accent-border: rgba(79, 70, 229, 0.25);
+    --accent-hover: #4338CA;
+    --success: #10B981;
+    --success-bg: rgba(16, 185, 129, 0.12);
+    --danger: #EF4444;
+    --danger-bg: rgba(239, 68, 68, 0.12);
+    --warning: #F59E0B;
+    --warning-bg: rgba(245, 158, 11, 0.12);
+    --info: #3B82F6;
+    --info-bg: rgba(59, 130, 246, 0.12);
+    --green: #059669;
+    --blue: #4F46E5;
+    --orange: #D97706;
+    --red: #DC2626;
+    --purple: #7C3AED;
+    --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    --shadow-hover: 0 8px 32px rgba(79, 70, 229, 0.12);
+    --icon-gradient: linear-gradient(135deg, #4F46E5, #7C3AED);
+}
+
+/* ── Thème Dark ── */
+[data-theme="dark"] {
+    --background: #0A0A0F;
+    --surface: #14141E;
+    --primary: #818CF8;
+    --secondary: #FBBF24;
+    --accent: #EEF2FF;
+    --text-primary: #EEF2FF;
+    --text-secondary: #C7D2FE;
+    --text-muted: #9CA3AF;
+    --border: #2D2D44;
+    --border-hover: #6366F1;
+    --nav-bg: rgba(10, 10, 15, 0.92);
+    --code-bg: #1A1A2E;
+    --input-bg: #1A1A2E;
+    --accent-bg: rgba(129, 140, 248, 0.12);
+    --accent-border: rgba(129, 140, 248, 0.30);
+    --accent-hover: #6366F1;
+    --success: #34D399;
+    --success-bg: rgba(52, 211, 153, 0.12);
+    --danger: #F87171;
+    --danger-bg: rgba(248, 113, 113, 0.12);
+    --warning: #FBBF24;
+    --warning-bg: rgba(251, 191, 36, 0.12);
+    --info: #60A5FA;
+    --info-bg: rgba(96, 165, 250, 0.12);
+    --green: #34D399;
+    --blue: #818CF8;
+    --orange: #FBBF24;
+    --red: #F87171;
+    --purple: #A78BFA;
+    --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    --shadow-hover: 0 8px 32px rgba(129, 140, 248, 0.15);
+    --icon-gradient: linear-gradient(135deg, #818CF8, #A78BFA);
+}
+
+/* Variables dérivées communes */
+:root {
+    --bg-primary: var(--background);
+    --bg-secondary: var(--surface);
+    --bg-tertiary: var(--code-bg);
+    --bg-card: var(--surface);
+    --text-light: var(--text-primary);
+    --accent-light: var(--primary);
+    --accent-dark: var(--accent);
+    --green: var(--success);
+    --red: var(--danger);
+    --orange: var(--warning);
+    --blue: var(--info);
+}
+
+/* Transition pour les changements de thème */
+* {
+    transition: 
+        background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        fill 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Styles spécifiques au thème Light */
+[data-theme="light"] .navbar {
+    border-bottom-color: #E5E7EB;
+}
+[data-theme="light"] .feature-card:hover {
+    box-shadow: 0 8px 32px rgba(79, 70, 229, 0.08);
+}
+[data-theme="light"] .btn-primary {
+    background: linear-gradient(135deg, #4F46E5, #7C3AED);
+}
+[data-theme="light"] .btn-primary:hover {
+    background: linear-gradient(135deg, #4338CA, #6D28D9);
+    box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
+}
+[data-theme="light"] .hero .highlight {
+    background: linear-gradient(135deg, #4F46E5, #7C3AED, #EC4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+[data-theme="light"] .terminal {
+    border-color: #E5E7EB;
+}
+[data-theme="light"] .terminal-bar {
+    background: #F3F4F6;
+}
+
+/* Styles spécifiques au thème Dark */
+[data-theme="dark"] .navbar {
+    border-bottom-color: #2D2D44;
+}
+[data-theme="dark"] .feature-card:hover {
+    box-shadow: 0 8px 32px rgba(129, 140, 248, 0.08);
+}
+[data-theme="dark"] .btn-primary {
+    background: linear-gradient(135deg, #818CF8, #A78BFA);
+}
+[data-theme="dark"] .btn-primary:hover {
+    background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    box-shadow: 0 4px 20px rgba(129, 140, 248, 0.25);
+}
+[data-theme="dark"] .hero .highlight {
+    background: linear-gradient(135deg, #818CF8, #A78BFA, #F472B6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+[data-theme="dark"] .terminal {
+    border-color: #2D2D44;
+}
+[data-theme="dark"] .terminal-bar {
+    background: #1A1A2E;
+}
+
+/* Personnalisation des scrollbars */
+[data-theme="light"] ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+[data-theme="light"] ::-webkit-scrollbar-track {
+    background: #F3F4F6;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+    background: #D1D5DB;
+    border-radius: 999px;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+    background: #9CA3AF;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: #1A1A2E;
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #2D2D44;
+    border-radius: 999px;
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #4B4B6B;
+}

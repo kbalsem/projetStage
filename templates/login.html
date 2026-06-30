@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - GitDoc AI</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/css/themes.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <div class="auth-page">
+
+        <!-- =====================================
+             NAVBAR AUTH
+        ===================================== -->
+        <nav class="auth-nav">
+            <a href="/" class="nav-logo">
+                <div class="logo-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                gitdoc<span class="logo-accent"></span>
+            </a>
+
+            <div class="nav-actions">
+                <!-- Même switch que la page d'accueil -->
+                <label class="switch" id="themeToggle" title="Changer le thème">
+                    <input type="checkbox" id="themeCheckbox">
+                    <span class="slider"></span>
+                </label>
+                <a href="/register" class="btn btn-primary btn-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="8.5" cy="7" r="4"/>
+                        <line x1="20" y1="8" x2="20" y2="14"/>
+                        <line x1="23" y1="11" x2="17" y2="11"/>
+                    </svg>
+                    S'inscrire
+                </a>
+            </div>
+        </nav>
+
+        <!-- =====================================
+             AUTH CONTAINER
+        ===================================== -->
+        <div class="auth-container">
+            <div class="auth-card">
+
+                <div class="auth-header">
+                    <div class="auth-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
+                    <h1>Connexion</h1>
+                    <p>Bienvenue sur GitDoc AI</p>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-messages">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('login') }}">
+                    <div class="form-group">
+                        <label for="email">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                            Adresse email
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            class="form-control"
+                            placeholder="exemple@email.com"
+                            required
+                            autofocus
+                            value="{{ request.form.get('email', '') }}"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            Mot de passe
+                        </label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="form-control"
+                            placeholder="Votre mot de passe"
+                            required
+                        />
+                    </div>
+
+                    <button type="submit" class="btn-login">
+                        Se connecter
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    Pas encore de compte ?
+                    <a href="{{ url_for('register') }}">S'inscrire</a>
+                </div>
+
+                <div style="text-align:center; margin-top:1rem;">
+                    <a href="/" class="back-home">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"/>
+                            <polyline points="12 19 5 12 12 5"/>
+                        </svg>
+                        Retour à l'accueil
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        (() => {
+            const checkbox = document.getElementById('themeCheckbox');
+            const html = document.documentElement;
+
+            // Charger le thème sauvegardé (dark par défaut)
+            const saved = localStorage.getItem('gitdoc-theme') || 'dark';
+            html.setAttribute('data-theme', saved);
+            checkbox.checked = (saved === 'dark');
+
+            checkbox.addEventListener('change', () => {
+                const next = checkbox.checked ? 'dark' : 'light';
+                html.setAttribute('data-theme', next);
+                localStorage.setItem('gitdoc-theme', next);
+            });
+        })();
+    </script>
+
+</body>
+</html>

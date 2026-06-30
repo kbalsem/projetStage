@@ -1,0 +1,8 @@
+site_name: Calculatrice_V2
+nav:
+- Accueil: index.md
+- Vue d'ensemble: global.md
+- Architecture: architecture.md
+- Fichiers: []
+theme:
+  name: material

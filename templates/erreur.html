@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Erreur - GitDoc AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h1> Une erreur est survenue</h1>
+
+    <div class="card error-card">
+        <p class="error-message">{{ error }}</p>
+        <p class="error-hint">Vérifiez que le dépôt existe et que l'URL est correcte.</p>
+    </div>
+
+    <br>
+
+    <a href="/">
+        <button class="btn-retour">🏠 Retour à l'accueil</button>
+    </a>
+
+</div>
+
+</body>
+</html>

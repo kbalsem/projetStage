@@ -1,34 +1,314 @@
-<!--Cette partie est la 1ere etpe de projet : l'interface
-    -->
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <title>GitDoc AI</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitDoc AI — Documentation automatique pour vos dépôts Git</title>
+    <link rel="stylesheet" href="/static/css/themes.css">
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
 
-<div class="container">
+    <!-- =====================================
+         NAVBAR
+    ===================================== -->
+    <nav class="navbar">
+        <a href="#" class="nav-logo">
+            <div class="logo-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            gitdoc<span class="logo-accent"></span>
+        </a>
 
-    <h1>Documentation Automatique de Dépôts Git</h1>
+        <div class="nav-links">
+            <label class="switch" id="themeToggle" title="Changer le thème">
+                <input type="checkbox" id="themeCheckbox">
+                <span class="slider"></span>
+            </label>
+            <a href="/login" class="btn btn-ghost">Connexion</a>
+            <a href="/register" class="btn btn-primary">Commencer</a>
+        </div>
+    </nav>
 
-    <form action="/analyser" method="POST" >
+    <!-- =====================================
+         HERO
+    ===================================== -->
+    <section class="hero">
+        <div class="hero-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            IA locale · Ollama · Llama3
+        </div>
 
-        <label>Chemin du dépôt Git</label>
+        <h1>
+            Transformez vos dépôts Git en
+            <span class="highlight">documentation professionnelle</span>
+        </h1>
 
-        <input
-            type="text"
-            name="url"
-            placeholder="C:/Users/.../MonProjet">
+        <p>
+            GitDoc analyse automatiquement votre dépôt GitHub, GitLab ou Bitbucket
+            et génère une documentation complète avec résumé IA, architecture et pages MkDocs.
+        </p>
 
-        <button type="submit">
-            Analyser
-        </button>
+        <div class="hero-actions">
+            <a href="/register" class="btn btn-primary btn-lg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+                Commencer gratuitement
+            </a>
+            <a href="#demo" class="btn btn-ghost btn-lg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                Voir une démo
+            </a>
+        </div>
 
-    </form>
+        <div class="hero-stats">
+            <div>
+                <strong>10k+</strong>
+                <span>Dépôts analysés</span>
+            </div>
+            <div>
+                <strong>95%</strong>
+                <span>Temps économisé</span>
+            </div>
+            <div>
+                <strong>3 min</strong>
+                <span>Documentation générée</span>
+            </div>
+        </div>
+    </section>
 
-</div>
+    <!-- =====================================
+         TERMINAL DEMO
+    ===================================== -->
+    <section id="demo" class="section">
+        <div class="terminal-wrap">
+            <div class="terminal">
+                <div class="terminal-bar">
+                    <span class="terminal-dot" style="background:#FF5F57"></span>
+                    <span class="terminal-dot" style="background:#FFBD2E"></span>
+                    <span class="terminal-dot" style="background:#28CA41"></span>
+                    <span style="margin-left:10px;color:var(--text-muted);font-size:.8rem;">gitdoc scan</span>
+                </div>
+                <div class="terminal-body">
+                    <div>
+                        <span class="t-prompt">$</span>
+                        analyser
+                        <span class="t-url">https://github.com/pallets/flask</span>
+                    </div>
+                    <div class="t-muted">→ Dépôt détecté : GitHub</div>
+                    <div class="t-muted">→ Analyse en cours...</div>
+                    <br>
+                    <div>
+                        <span class="t-key">repo_name</span>
+                        : <span class="t-val">flask</span>
+                    </div>
+                    <div>
+                        <span class="t-key">commits</span>
+                        : <span class="t-val">5539</span>
+                    </div>
+                    <div>
+                        <span class="t-key">stars</span>
+                        : <span class="t-val">71744</span>
+                    </div>
+                    <div>
+                        <span class="t-key">langages</span>
+                        : <span class="t-val">Python, HTML, JS</span>
+                    </div>
+                    <div>
+                        <span class="t-key">résumé IA</span>
+                        : <span class="t-val">généré ✓</span>
+                    </div>
+                    <br>
+                    <div class="t-ok">✔ Documentation générée avec succès</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
+    <!-- =====================================
+         FEATURES
+    ===================================== -->
+    <section class="section">
+        <div class="section-label">Fonctionnalités</div>
+        <h2>Tout ce dont vous avez besoin</h2>
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                </div>
+                <h3>Scan intelligent</h3>
+                <p>Analyse complète du dépôt, des fichiers et de l'historique Git.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                </div>
+                <h3>Résumé IA</h3>
+                <p>Llama3 génère automatiquement une documentation structurée.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                </div>
+                <h3>Génération MkDocs</h3>
+                <p>Documentation moderne prête à être publiée.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                </div>
+                <h3>Rapide</h3>
+                <p>Documentation créée en quelques minutes.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- =====================================
+         WHY GITDOC
+    ===================================== -->
+    <section class="section">
+        <div class="section-label">Pourquoi GitDoc</div>
+        <h2>Réduisez le temps passé à documenter</h2>
+        <div class="grid-3">
+            <div class="card">
+                <div class="card-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
+                <h3>Onboarding rapide</h3>
+                <p class="text-muted">Les nouveaux développeurs comprennent rapidement le projet.</p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                </div>
+                <h3>Toujours à jour</h3>
+                <p class="text-muted">Généré directement depuis le dépôt Git.</p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 8 14"/>
+                    </svg>
+                </div>
+                <h3>Gain de temps</h3>
+                <p class="text-muted">Plus besoin d'écrire la documentation manuellement.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- =====================================
+         FAQ
+    ===================================== -->
+    <section class="section">
+        <div class="section-label">FAQ</div>
+        <h2>Questions fréquentes</h2>
+        <div class="card faq-card">
+            <details>
+                <summary>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    Les dépôts privés sont-ils supportés ?
+                </summary>
+                <p class="mt-2 text-muted">Oui, via un token GitHub ou GitLab.</p>
+            </details>
+            <hr class="divider">
+            <details>
+                <summary>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                    Quels modèles IA sont compatibles ?
+                </summary>
+                <p class="mt-2 text-muted">Llama3, Mistral, Gemma et tout modèle Ollama.</p>
+            </details>
+            <hr class="divider">
+            <details>
+                <summary>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    Puis-je exporter ma documentation ?
+                </summary>
+                <p class="mt-2 text-muted">Oui, sous forme de site MkDocs.</p>
+            </details>
+        </div>
+    </section>
+
+    <!-- =====================================
+         CTA
+    ===================================== -->
+    <section class="cta-section">
+        <h2>Prêt à documenter votre prochain projet ?</h2>
+        <p>Créez votre compte gratuitement et générez votre première documentation en quelques minutes.</p>
+        <a href="/register" class="btn btn-primary btn-lg mt-3">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Commencer maintenant
+        </a>
+    </section>
+
+    <!-- =====================================
+         FOOTER
+    ===================================== -->
+    <footer class="footer">
+        <div>GitDoc AI</div>
+        <div class="mt-1">Documentation intelligente pour vos projets Git.</div>
+        <div class="mt-1">© 2026 GitDoc — Tous droits réservés.</div>
+    </footer>
+
+    <script>
+        (() => {
+            const checkbox = document.getElementById('themeCheckbox');
+            const html = document.documentElement;
+            const saved = localStorage.getItem('gitdoc-theme') || 'dark';
+            html.setAttribute('data-theme', saved);
+            checkbox.checked = (saved === 'dark');
+
+            checkbox.addEventListener('change', () => {
+                const next = checkbox.checked ? 'dark' : 'light';
+                html.setAttribute('data-theme', next);
+                localStorage.setItem('gitdoc-theme', next);
+            });
+        })();
+    </script>
 </body>
 </html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Détail - GitDoc AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .comparaison-architecture { margin: 24px 0; }
+        .legende { margin-bottom: 16px; font-size: 14px; }
+        .legende .badge { font-size: 18px; margin-right: 4px; }
+        .badge.ok { color: #2ecc71; }
+        .badge.manquant { color: #e74c3c; }
+        .badge.extra { color: #f39c12; }
+
+        .arbres-container {
+            display: flex;
+            gap: 32px;
+            justify-content: center;
+        }
+        .arbre-colonne h4 {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .noeud-rect {
+            stroke-width: 1.5px;
+            rx: 6;
+        }
+        .noeud-rect.ok       { fill: #d4f7dc; stroke: #2ecc71; }
+        .noeud-rect.manquant { fill: #fbdada; stroke: #e74c3c; }
+        .noeud-rect.extra    { fill: #fdebcd; stroke: #f39c12; }
+
+        .noeud-texte {
+            font-size: 13px;
+            font-family: sans-serif;
+            fill: #222;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Détail de l'analyse</h1>
+
+    <div class="card">
+        <p><strong>Dépôt :</strong> {{ historique.repo_name }}</p>
+        <p><strong>URL :</strong> {{ historique.url }}</p>
+        <p><strong>Auteur :</strong> {{ historique.author }}</p>
+        <p><strong>Branche :</strong> {{ historique.branch }}</p>
+        <p><strong>Commits :</strong> {{ historique.commits }}</p>
+        <p><strong>Date :</strong> {{ historique.date_analyse.strftime('%d/%m/%Y %H:%M') }}</p>
+        <p><strong>Description :</strong> {{ historique.description }}</p>
+    </div>
+
+    <div class="comparaison-architecture">
+        <h3>Comparaison d'architecture</h3>
+        <div class="legende">
+            <span class="badge ok">●</span> Conforme
+            <span class="badge manquant">●</span> Manquant
+            <span class="badge extra">●</span> Hors convention
+        </div>
+
+        <div class="arbres-container">
+            <div class="arbre-colonne">
+                <h4>Architecture actuelle</h4>
+                <svg id="arbre-ancienne" width="350" height="400"></svg>
+            </div>
+            <div class="arbre-colonne">
+                <h4>Architecture proposée (<span id="nom-architecture"></span>)</h4>
+                <svg id="arbre-proposee" width="350" height="400"></svg>
+            </div>
+        </div>
+    </div>
+
+    <a href="/dashboard" class="btn-retour">⬅ Retour</a>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+function dessinerArbreSimple(svgId, dossiers, racineNom) {
+    const svg = d3.select(svgId);
+    svg.selectAll("*").remove();
+
+    const hauteurLigne = 40;
+    const decalageX = 80;
+    const decalageYRacine = 30;
+
+    // Nœud racine
+    svg.append("rect")
+        .attr("class", "noeud-rect")
+        .attr("x", decalageX - 60)
+        .attr("y", decalageYRacine - 15)
+        .attr("width", 120)
+        .attr("height", 30)
+        .style("fill", "#e8e8e8")
+        .style("stroke", "#999");
+
+    svg.append("text")
+        .attr("class", "noeud-texte")
+        .attr("x", decalageX)
+        .attr("y", decalageYRacine + 5)
+        .attr("text-anchor", "middle")
+        .text(racineNom);
+
+    // Nœuds enfants (les dossiers)
+    dossiers.forEach((d, i) => {
+        const y = decalageYRacine + (i + 1) * hauteurLigne + 20;
+
+        // Ligne de connexion
+        svg.append("line")
+            .attr("x1", decalageX)
+            .attr("y1", decalageYRacine + 15)
+            .attr("x2", decalageX)
+            .attr("y2", y - 15)
+            .style("stroke", "#ccc");
+
+        svg.append("rect")
+            .attr("class", `noeud-rect ${d.statut}`)
+            .attr("x", decalageX - 70)
+            .attr("y", y - 15)
+            .attr("width", 140)
+            .attr("height", 30);
+
+        svg.append("text")
+            .attr("class", "noeud-texte")
+            .attr("x", decalageX)
+            .attr("y", y + 5)
+            .attr("text-anchor", "middle")
+            .text(d.nom);
+    });
+}
+
+function chargerComparaison(historiqueId) {
+    fetch(`/historique/${historiqueId}/comparaison-architecture`)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("nom-architecture").textContent = data.architecture;
+            dessinerArbreSimple("#arbre-ancienne", data.ancienne, "Projet (réel)");
+            dessinerArbreSimple("#arbre-proposee", data.proposee, data.architecture);
+        })
+        .catch(err => console.error("Erreur chargement comparaison :", err));
+}
+
+// Lance le chargement automatiquement à l'ouverture de la page
+const historiqueId = "{{ historique.id }}";
+chargerComparaison(historiqueId);</script>
+
+</body>
+</html>
