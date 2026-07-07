@@ -1,331 +1,527 @@
-import requests
+# architecture/ollama_detecteur.py
+"""
+Module de détection d'architecture assistée par Ollama (IA locale).
+
+Ce module utilise Ollama pour affiner ou confirmer la détection
+d'architecture logicielle quand le scoring automatique est incertain.
+"""
+
 import json
 import logging
+import os
+from typing import Dict, List, Optional, Tuple
+
+from utils.ollama_client import generer
 
 logger = logging.getLogger(__name__)
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL      = "llama3"
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONFIGURATION DEPUIS .ENV
+# ═══════════════════════════════════════════════════════════════════════════════
 
-
-# Ordre de priorité des fichiers stratégiques à privilégier pour le prompt
+# Fichiers prioritaires pour l'analyse
 FICHIERS_PRIORITAIRES = [
-    "requirements.txt", "package.json", "pom.xml",
-    "build.gradle", "composer.json", "cargo.toml",
-    "docker-compose.yml", "docker-compose.yaml",
-    "main.py", "app.py", "index.js", "server.js"
+    f.strip() for f in os.getenv(
+        "OLLAMA_FICHIERS_PRIORITAIRES",
+        "requirements.txt,package.json,pom.xml,build.gradle,composer.json,"
+        "cargo.toml,docker-compose.yml,docker-compose.yaml,"
+        "main.py,app.py,index.js,server.js"
+    ).split(",")
 ]
 
-def choisir_fichier_strategique(contenu: dict) -> tuple:
+# Architectures valides reconnues
+ARCHITECTURES_VALIDES = [
+    a.strip() for a in os.getenv(
+        "OLLAMA_ARCHITECTURES_VALIDES",
+        "MVC,MVP,MVVM,COUCHES,CLEAN,MICROSERVICES,MONOLITHIQUE"
+    ).split(",")
+]
+
+# Paramètres de l'appel Ollama
+OLLAMA_MAX_TOKENS = int(os.getenv("OLLAMA_MAX_TOKENS", "200"))
+OLLAMA_TEMPERATURE = float(os.getenv("OLLAMA_TEMPERATURE", "0.1"))
+OLLAMA_TIMEOUT = int(os.getenv("OLLAMA_TIMEOUT", "120"))
+OLLAMA_MAX_RETRIES = int(os.getenv("OLLAMA_MAX_RETRIES", "2"))
+
+# Limites d'affichage dans les prompts
+MAX_DOSSIERS_PROMPT = int(os.getenv("OLLAMA_MAX_DOSSIERS_PROMPT", "15"))
+MAX_SIGNAUX_PROMPT = int(os.getenv("OLLAMA_MAX_SIGNAUX_PROMPT", "10"))
+MAX_CONTENU_FICHIER = int(os.getenv("OLLAMA_MAX_CONTENU_FICHIER", "300"))
+MAX_SCORES_PROMPT = int(os.getenv("OLLAMA_MAX_SCORES_PROMPT", "3"))
+
+# Flag pour le mode debug
+DEBUG_OLLAMA = os.getenv("DEBUG_OLLAMA", "false").lower() == "true"
+
+# Mapping de confiance
+CONFIANCE_BOOST = {
+    "faible": "moyenne",
+    "moyenne": "élevée", 
+    "élevée": "élevée"
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FONCTIONS UTILITAIRES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def choisir_fichier_strategique(contenu: Dict[str, str]) -> Tuple[Optional[str], Optional[str]]:
+    """
+    Choisit le fichier le plus pertinent pour l'analyse.
+    
+    Args:
+        contenu: Dictionnaire {chemin: contenu} des fichiers
+        
+    Returns:
+        Tuple (chemin, contenu) ou (None, None)
+    """
     if not contenu:
         return None, None
 
+    # Chercher un fichier prioritaire
     for nom_prioritaire in FICHIERS_PRIORITAIRES:
         for chemin, texte in contenu.items():
-            if chemin.lower().endswith(nom_prioritaire):
+            if chemin.lower().endswith(nom_prioritaire.lower()):
+                if DEBUG_OLLAMA:
+                    logger.debug(f"Fichier stratégique trouvé: {chemin}")
                 return chemin, texte
 
-    chemin, texte = list(contenu.items())[0]
+    # Fallback : prendre le premier fichier
+    chemin, texte = next(iter(contenu.items()))
+    logger.info(f"Aucun fichier prioritaire trouvé, fallback sur: {chemin}")
     return chemin, texte
 
-def construire_prompt(data: dict, candidat: str, scores: dict, conflit: dict = None) -> str:
-    dossiers   = data.get("dossiers", [])[:20]
+
+def _formater_liste_signaux(signaux: Optional[Dict[str, set]], 
+                             categorie: str, 
+                             limite: int = MAX_SIGNAUX_PROMPT) -> str:
+    """
+    Formate une catégorie de signaux pour le prompt.
+    
+    Args:
+        signaux: Dictionnaire des signaux par catégorie
+        categorie: Nom de la catégorie à formater
+        limite: Nombre maximum d'éléments
+        
+    Returns:
+        Chaîne formatée
+    """
+    if not signaux:
+        return "aucun"
+    
+    valeurs = signaux.get(categorie, set())
+    if not valeurs:
+        return "aucun"
+    
+    return ', '.join(list(valeurs)[:limite])
+
+
+def construire_prompt(data: Dict, 
+                      candidat: str, 
+                      scores: Dict,
+                      conflit: Optional[Dict] = None, 
+                      signaux_detectes: Optional[Dict] = None) -> str:
+    """
+    Construit le prompt enrichi pour l'analyse Ollama.
+    
+    Args:
+        data: Données du projet
+        candidat: Architecture candidate principale
+        scores: Scores par architecture
+        conflit: Informations de conflit éventuel
+        signaux_detectes: Signaux détectés par le scoring
+        
+    Returns:
+        Prompt formaté pour Ollama
+    """
+    # Extraire les informations du projet
+    dossiers = data.get("dossiers", [])[:MAX_DOSSIERS_PROMPT]
     frameworks = data.get("frameworks", [])
-    contenu    = data.get("contenu_strategique", {})
+    contenu = data.get("contenu_strategique", {})
 
+    # Fichier stratégique
     chemin, texte = choisir_fichier_strategique(contenu)
-    contenu_formate = f"{chemin}:\n{texte[:300]}" if chemin else "aucun"
+    contenu_formate = f"{chemin}:\n{texte[:MAX_CONTENU_FICHIER]}" if chemin else "aucun"
 
-    dossiers_str   = ', '.join(dossiers)
+    # Formater les signaux
+    imports_str = _formater_liste_signaux(signaux_detectes, "imports")
+    classes_str = _formater_liste_signaux(signaux_detectes, "classes")
+    decorateurs_str = _formater_liste_signaux(signaux_detectes, "decorateurs")
+    dependances_str = _formater_liste_signaux(signaux_detectes, "dependances")
+
+    dossiers_str = ', '.join(dossiers) if dossiers else 'aucun'
     frameworks_str = ', '.join(frameworks) if frameworks else 'aucun'
 
+    # Prompt pour cas de conflit
     if conflit and conflit.get("conflit"):
-        candidat_1 = conflit["candidat_1"]
-        candidat_2 = conflit["candidat_2"]
+        return _construire_prompt_conflit(
+            dossiers_str, frameworks_str, imports_str, decorateurs_str, 
+            classes_str, dependances_str, contenu_formate, conflit
+        )
 
-        prompt = f"""Tu es un expert en architecture logicielle. Analyse ce projet Git.
+    # Prompt normal
+    return _construire_prompt_normal(
+        dossiers_str, frameworks_str, imports_str, decorateurs_str, 
+        classes_str, dependances_str, contenu_formate, candidat, scores
+    )
+
+
+def _construire_prompt_conflit(dossiers_str: str, frameworks_str: str,
+                                imports_str: str, decorateurs_str: str,
+                                classes_str: str, dependances_str: str,
+                                contenu_formate: str, conflit: Dict) -> str:
+    """Construit le prompt pour un cas de conflit entre deux architectures."""
+    candidat_1 = conflit["candidat_1"]
+    candidat_2 = conflit["candidat_2"]
+
+    prompt = f"""Tu es un expert en architecture logicielle. Analyse ce projet Git.
 
 Dossiers : {dossiers_str}
 Frameworks : {frameworks_str}
+Imports : {imports_str}
+Décorateurs : {decorateurs_str}
+Classes : {classes_str}
+Dépendances : {dependances_str}
 Fichier clé : {contenu_formate}
 
-Le système de scoring hésite entre deux architectures à égalité :
+Le système de scoring hésite entre deux architectures :
 - {candidat_1}
 - {candidat_2}
 
 Analyse les indices ci-dessus et choisis celle qui correspond le mieux.
+Justifie ton choix en te basant sur les patterns observés.
 
-RÈGLE STRICTE : tu dois OBLIGATOIREMENT répondre avec "{candidat_1}" ou "{candidat_2}".
-Aucune autre architecture n'est acceptée, même si elle te semble plus appropriée.
+RÈGLE STRICTE : réponds OBLIGATOIREMENT avec "{candidat_1}" ou "{candidat_2}".
 
-Réponds UNIQUEMENT avec ce JSON, rien d'autre :
-{{"architecture": "{candidat_1}_ou_{candidat_2}", "justification": "raison courte", "confiance": "élevée/moyenne/faible", "elements_cles": ["el1", "el2"]}}"""
+Réponds UNIQUEMENT avec ce JSON :
+{{"architecture": "<choix>", "justification": "raison courte", "confiance": "élevée/moyenne/faible", "elements_cles": ["el1", "el2"]}}"""
 
-        return prompt.strip()
+    return prompt.strip()
 
-    top_scores = list(scores.items())[:3]
+
+def _construire_prompt_normal(dossiers_str: str, frameworks_str: str,
+                               imports_str: str, decorateurs_str: str,
+                               classes_str: str, dependances_str: str,
+                               contenu_formate: str, candidat: str, 
+                               scores: Dict) -> str:
+    """Construit le prompt standard pour confirmer une architecture."""
+    
+    top_scores = list(scores.items())[:MAX_SCORES_PROMPT]
     scores_formate = " | ".join(f"{a}:{s}pts" for a, s in top_scores)
 
     prompt = f"""Tu es un expert en architecture logicielle. Analyse ce projet Git.
 
 Dossiers : {dossiers_str}
 Frameworks : {frameworks_str}
+Imports : {imports_str}
+Décorateurs : {decorateurs_str}
+Classes : {classes_str}
+Dépendances : {dependances_str}
 Fichier clé : {contenu_formate}
 Scoring propose : {candidat} ({scores_formate})
 
-Réponds UNIQUEMENT avec ce JSON, rien d'autre :
+Confirme ou infirme cette détection en analysant la cohérence des patterns.
+
+Réponds UNIQUEMENT avec ce JSON :
 {{"architecture": "<UNE_DES_OPTIONS>", "justification": "raison courte", "confiance": "élevée/moyenne/faible", "elements_cles": ["el1", "el2"]}}
 
-Choisis parmi : MVC, MVP, MVVM, COUCHES, CLEAN, MICROSERVICES, MONOLITHIQUE"""
+Choisis parmi : {', '.join(ARCHITECTURES_VALIDES)}"""
 
     return prompt.strip()
 
-def interroger_ollama(prompt: str, max_retries: int = 2) -> dict:
+
+def interroger_ollama(prompt: str, max_retries: int = None) -> Optional[Dict]:
     """
-    Envoie le prompt à Ollama et retourne la réponse parsée.
-    Réessaie automatiquement en cas d'erreur HTTP ou de timeout
-    (utile notamment au premier appel, le temps qu'Ollama charge le modèle en mémoire).
+    Interroge Ollama et parse la réponse JSON.
+    
+    Args:
+        prompt: Prompt à envoyer
+        max_retries: Nombre maximum de tentatives
+        
+    Returns:
+        Dictionnaire parsé ou None si erreur
     """
-    payload = {
-        "model"  : MODEL,
-        "prompt" : prompt,
-        "stream" : False,
-        "options": {
-            "temperature": 0.1,
-            "num_predict": 200    # Réduit — on veut juste un JSON court
-        }
-    }
-
-    reponse = None
-    texte = None
-
-    for tentative in range(max_retries + 1):
-        try:
-            reponse = requests.post(OLLAMA_URL, json=payload, timeout=120)
-            reponse.raise_for_status()
-            break  # succès → on sort de la boucle de retry
-
-        except requests.exceptions.HTTPError as e:
-            # On capture le corps de la réponse AVANT de perdre l'info — c'est ça
-            # qui donne la vraie cause du 500 (mémoire, modèle, payload, etc.)
-            corps_erreur = reponse.text if reponse is not None else "(pas de corps de réponse)"
-            logger.error(
-                f"Erreur HTTP Ollama (tentative {tentative + 1}/{max_retries + 1}) : {e}"
-            )
-            logger.error(f"Corps de la réponse Ollama : {corps_erreur}")
-            print(f"  [DEBUG] Erreur Ollama détaillée : {corps_erreur}")
-            if tentative == max_retries:
-                return None
-            continue
-
-        except requests.exceptions.ConnectionError:
-            logger.error("Ollama non disponible (connexion refusée)")
-            return None
-
-        except requests.exceptions.Timeout:
-            logger.error(
-                f"Timeout Ollama après 120s (tentative {tentative + 1}/{max_retries + 1})"
-            )
-            if tentative == max_retries:
-                return None
-            continue
-
+    if max_retries is None:
+        max_retries = OLLAMA_MAX_RETRIES
+    
     try:
-        texte = reponse.json().get("response", "").strip()
-
-        # Afficher la réponse brute pour debug
-        logger.info(f"Réponse brute Ollama : '{texte}'")
-        print(f"  [DEBUG] Réponse Ollama brute : {texte[:200]}")
-
-        if not texte:
-            logger.error("Ollama a retourné une réponse vide")
-            return None
-
-        # Nettoyer — extraire le JSON
-        if "```json" in texte:
-            texte = texte.split("```json")[1].split("```")[0].strip()
-        elif "```" in texte:
-            texte = texte.split("```")[1].split("```")[0].strip()
-
-        # Chercher le JSON dans la réponse si entouré de texte
-        if "{" in texte and "}" in texte:
-            debut = texte.index("{")
-            fin   = texte.rindex("}") + 1
-            texte = texte[debut:fin]
-
-        # Parser le JSON
-        resultat = json.loads(texte)
-
-        # Valider les champs
-        architectures_valides = [
-            "MVC", "MVP", "MVVM", "COUCHES",
-            "CLEAN", "MICROSERVICES", "MONOLITHIQUE"
-        ]
-        if resultat.get("architecture") not in architectures_valides:
-            logger.warning(f"Architecture invalide : {resultat.get('architecture')}")
-            return None
-
-        return resultat
-
-    except json.JSONDecodeError as e:
-        logger.error(f"Réponse Ollama non parseable : {e}")
-        print(f"  [DEBUG] Texte reçu : '{texte}'")
-        return None
-    except Exception as e:
-        logger.error(f"Erreur inattendue lors du traitement de la réponse Ollama : {e}")
-        return None
-
-def detecter_avec_ollama(data_scanner: dict, resultat_scoring: dict) -> dict:
-    """
-    Fonction principale — combine scoring + Ollama.
-    """
-    candidat   = resultat_scoring["architecture"]
-    scores     = resultat_scoring["scores"]
-    confiance  = resultat_scoring["confiance"]
-    conflit    = resultat_scoring.get("conflit", {"conflit": False})
-
-    logger.info(f"Scoring propose : {candidat} (confiance : {confiance})")
-    if conflit.get("conflit"):
-        logger.info(
-            f"Conflit en attente d'arbitrage Ollama entre "
-            f"{conflit['candidat_1']} et {conflit['candidat_2']}"
+        texte = generer(
+            prompt=prompt, 
+            max_tokens=OLLAMA_MAX_TOKENS, 
+            temperature=OLLAMA_TEMPERATURE,
+            timeout=OLLAMA_TIMEOUT, 
+            max_retries=max_retries, 
+            nettoyer=True
         )
-    logger.info("Interrogation d'Ollama pour confirmation...")
+    except Exception as e:
+        logger.error(f"Erreur appel Ollama: {e}")
+        return None
 
+    if not texte or texte.startswith("[Erreur"):
+        logger.error(f"Ollama a retourné une erreur ou une réponse vide: {texte[:100] if texte else 'None'}")
+        return None
+
+    if DEBUG_OLLAMA:
+        logger.debug(f"Réponse brute Ollama: '{texte[:200]}'")
+
+    # Tenter de parser le JSON
+    try:
+        resultat = json.loads(texte)
+    except json.JSONDecodeError:
+        logger.error(f"Réponse non parseable: '{texte[:200]}'")
+        # Tenter de nettoyer la réponse
+        resultat = _tenter_nettoyage_json(texte)
+        if not resultat:
+            return None
+
+    # Valider l'architecture retournée
+    architecture = resultat.get("architecture", "")
+    if architecture not in ARCHITECTURES_VALIDES:
+        logger.warning(f"Architecture invalide retournée: '{architecture}'")
+        return None
+
+    # Valider la confiance
+    confiance = resultat.get("confiance", "moyenne")
+    if confiance not in ("élevée", "moyenne", "faible"):
+        resultat["confiance"] = "moyenne"
+
+    return resultat
+
+
+def _tenter_nettoyage_json(texte: str) -> Optional[Dict]:
+    """
+    Tente de nettoyer et parser un JSON malformé.
+    
+    Args:
+        texte: Texte à nettoyer
+        
+    Returns:
+        Dictionnaire parsé ou None
+    """
+    import re
+    
+    # Essayer d'extraire un objet JSON avec regex
+    match = re.search(r'\{[^{}]*\}', texte, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group())
+        except json.JSONDecodeError:
+            pass
+    
+    # Essayer de remplacer les guillemets simples
+    try:
+        return json.loads(texte.replace("'", '"'))
+    except json.JSONDecodeError:
+        pass
+    
+    return None
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FONCTION PRINCIPALE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def detecter_avec_ollama(data_scanner: Dict, resultat_scoring: Dict) -> Dict:
+    """
+    Détection d'architecture assistée par Ollama.
+    
+    Combine le scoring automatique avec l'analyse IA pour:
+    - Confirmer une détection incertaine
+    - Arbitrer un conflit entre deux architectures
+    - Corriger une détection si Ollama est très confiant
+    
+    Args:
+        data_scanner: Données brutes du scanner
+        resultat_scoring: Résultat du scoring automatique
+        
+    Returns:
+        Dictionnaire enrichi avec l'analyse Ollama
+    """
+    candidat = resultat_scoring.get("architecture", "MONOLITHIQUE")
+    scores = resultat_scoring.get("scores", {})
+    confiance = resultat_scoring.get("confiance", "faible")
+    conflit = resultat_scoring.get("conflit", {"conflit": False})
+    besoin_ollama = resultat_scoring.get("besoin_ollama", False)
+    raison_ollama = resultat_scoring.get("raison_ollama", "")
+
+    # Si Ollama n'est pas nécessaire, retourner directement le scoring
+    if not besoin_ollama:
+        logger.info(f"Ollama non nécessaire — scoring conservé (confiance: {confiance})")
+        return _resultat_scoring_simple(resultat_scoring)
+
+    logger.info(f"Appel Ollama nécessaire : {raison_ollama}")
+
+    # Préparer le contexte
     contexte = {
-        "repo_name"           : data_scanner.get("repo_name", ""),
-        "dossiers"            : resultat_scoring.get("dossiers", []),
-        "frameworks"          : resultat_scoring.get("frameworks", []),
-        "fichiers_originaux"  : data_scanner.get("fichiers", []),
-        "contenu_strategique" : data_scanner.get("contenu_strategique", {})
+        "repo_name": data_scanner.get("repo_name", ""),
+        "dossiers": resultat_scoring.get("dossiers", []),
+        "frameworks": resultat_scoring.get("frameworks", []),
+        "contenu_strategique": data_scanner.get("contenu_strategique", {}),
     }
 
-    prompt = construire_prompt(contexte, candidat, scores, conflit)
+    # Construire et envoyer le prompt
+    prompt = construire_prompt(
+        contexte, candidat, scores, conflit,
+        signaux_detectes=resultat_scoring.get("signaux_detectes", {})
+    )
+    
     reponse_ollama = interroger_ollama(prompt)
 
-    if reponse_ollama:
-        architecture_ollama = reponse_ollama["architecture"]
-        confiance_ollama     = reponse_ollama["confiance"]
-        justification        = reponse_ollama["justification"]
-        elements_cles        = reponse_ollama.get("elements_cles", [])
+    # Fallback si Ollama est indisponible
+    if not reponse_ollama:
+        logger.warning("Ollama indisponible — scoring conservé")
+        return _resultat_fallback_ollama(resultat_scoring, conflit)
 
-        # ── Cas conflit résolu par Ollama ──────────────────────────
-        if conflit.get("conflit"):
-            candidat_1 = conflit["candidat_1"]
-            candidat_2 = conflit["candidat_2"]
-
-            if architecture_ollama in (candidat_1, candidat_2):
-                # Ollama a respecté les deux options proposées
-                decision_finale  = architecture_ollama
-                confiance_finale = confiance_ollama
-                source           = "ollama (arbitrage de conflit)"
-                logger.info(f"Ollama tranche le conflit en faveur de : {architecture_ollama}")
-            else:
-                # Ollama a halluciné une 3e architecture hors des deux proposées
-                # → on rejette sa réponse et on retombe sur le meilleur score brut
-                logger.warning(
-                    f"Ollama a proposé '{architecture_ollama}' hors du conflit "
-                    f"({candidat_1} vs {candidat_2}) — réponse rejetée, "
-                    f"retour au candidat du scoring : {candidat}"
-                )
-                decision_finale  = candidat
-                confiance_finale = "faible"  # On garde une confiance faible car le conflit n'est pas vraiment résolu
-                source           = "scoring (rejet de la réponse Ollama hors-périmètre)"
-
-        # ── Cas normal : confirmation ou correction ────────────────
-        elif architecture_ollama == candidat:
-            decision_finale = architecture_ollama
-
-            # Étape 5 : n'upgrader que si Ollama est lui-même confiant
-            if confiance_ollama in ("moyenne", "élevée"):
-                if confiance == "faible":
-                    confiance_finale = "moyenne"
-                elif confiance == "moyenne":
-                    confiance_finale = "élevée"
-                else:
-                    confiance_finale = "élevée"
-                source = "scoring + ollama (accord, confiance renforcée)"
-            else:
-                # Ollama d'accord mais peu sûr de lui → pas d'upgrade
-                confiance_finale = confiance
-                source = "scoring + ollama (accord, mais Ollama peu confiant)"
-
-            logger.info(
-                f"Accord scoring/Ollama sur {architecture_ollama} — "
-                f"confiance scoring={confiance}, confiance Ollama={confiance_ollama} "
-                f"→ confiance finale={confiance_finale}"
-            )
-
-        else:
-            score_architecture_ollama = scores.get(architecture_ollama, 0)
-
-            if score_architecture_ollama == 0:
-                decision_finale  = candidat
-                confiance_finale = "faible"
-                source           = "scoring (correction Ollama rejetée, aucun signal structurel)"
-                justification    = (
-                    f"Détection par scoring (candidat : {candidat}). "
-                    f"Ollama avait suggéré '{architecture_ollama}' mais cette proposition "
-                    f"a été rejetée car aucun signal structurel ne la soutient."
-                )
-                logger.warning(
-                    f"Ollama propose {architecture_ollama} mais son score de scoring "
-                    f"est de 0 (aucun signal détecté) — correction rejetée, "
-                    f"on garde le scoring : {candidat}"
-                )
-
-            elif confiance_ollama == "élevée":
-                decision_finale  = architecture_ollama
-                confiance_finale = confiance_ollama
-                source           = "ollama (correction du scoring, confiance élevée)"
-                logger.info(
-                    f"Ollama corrige avec confiance élevée : "
-                    f"{candidat} → {architecture_ollama}"
-                )
-
-            else:
-                decision_finale  = candidat
-                confiance_finale = "faible"
-                source           = "scoring (correction Ollama rejetée, confiance insuffisante)"
-                justification    = (
-                    f"Détection par scoring (candidat : {candidat}). "
-                    f"Ollama avait suggéré '{architecture_ollama}' avec une confiance "
-                    f"insuffisante ({confiance_ollama}) — proposition rejetée."
-                )
-                logger.warning(
-                    f"Ollama propose {architecture_ollama} (confiance={confiance_ollama}) "
-                    f"mais pas assez confiant pour écraser le scoring ({candidat}) "
-                    f"→ on garde le scoring avec confiance faible"
-                )
-
-        return {
-            "architecture"       : decision_finale,
-            "confiance"          : confiance_finale,
-            "scores"             : scores,
-            "dossiers"           : resultat_scoring.get("dossiers", []),
-            "frameworks"         : resultat_scoring.get("frameworks", []),
-            "justification"      : justification,
-            "elements_cles"      : elements_cles,
-            "source"             : source,
-            "candidat_scoring"   : candidat,
-            "reponse_ollama"     : architecture_ollama,
-            "etait_en_conflit"   : conflit.get("conflit", False)
-        }
-
+    # Traiter la réponse selon le contexte
+    if conflit.get("conflit"):
+        return _traiter_reponse_conflit(resultat_scoring, reponse_ollama)
     else:
-        logger.warning("Ollama indisponible — résultat basé sur le scoring uniquement")
-        # Si on était en conflit et qu'Ollama ne répond pas, on garde confiance faible
-        confiance_fallback = "faible" if conflit.get("conflit") else confiance
+        return _traiter_reponse_normale(resultat_scoring, reponse_ollama)
+
+
+def _resultat_scoring_simple(resultat_scoring: Dict) -> Dict:
+    """Retourne le résultat du scoring sans analyse Ollama."""
+    return {
+        "architecture": resultat_scoring["architecture"],
+        "confiance": resultat_scoring["confiance"],
+        "scores": resultat_scoring.get("scores", {}),
+        "dossiers": resultat_scoring.get("dossiers", []),
+        "frameworks": resultat_scoring.get("frameworks", []),
+        "justification": f"Détection par scoring (confiance {resultat_scoring['confiance']})",
+        "elements_cles": resultat_scoring.get("details", {}).get("signaux", [])[:5],
+        "source": "scoring uniquement",
+        "candidat_scoring": resultat_scoring["architecture"],
+        "reponse_ollama": None,
+        "etait_en_conflit": False,
+    }
+
+
+def _resultat_fallback_ollama(resultat_scoring: Dict, conflit: Dict) -> Dict:
+    """Retourne le résultat quand Ollama est indisponible."""
+    confiance = resultat_scoring.get("confiance", "faible")
+    confiance_fallback = "faible" if conflit.get("conflit") else confiance
+    
+    return {
+        "architecture": resultat_scoring["architecture"],
+        "confiance": confiance_fallback,
+        "scores": resultat_scoring.get("scores", {}),
+        "dossiers": resultat_scoring.get("dossiers", []),
+        "frameworks": resultat_scoring.get("frameworks", []),
+        "justification": "Détection par scoring (Ollama indisponible)",
+        "elements_cles": [],
+        "source": "scoring uniquement",
+        "candidat_scoring": resultat_scoring["architecture"],
+        "reponse_ollama": None,
+        "etait_en_conflit": conflit.get("conflit", False),
+    }
+
+
+def _traiter_reponse_conflit(resultat_scoring: Dict, reponse_ollama: Dict) -> Dict:
+    """Traite la réponse Ollama dans un cas de conflit."""
+    conflit = resultat_scoring["conflit"]
+    candidat_1 = conflit["candidat_1"]
+    candidat_2 = conflit["candidat_2"]
+    architecture_ollama = reponse_ollama["architecture"]
+    
+    if architecture_ollama in (candidat_1, candidat_2):
         return {
-            "architecture"     : candidat,
-            "confiance"        : confiance_fallback,
-            "scores"           : scores,
-            "dossiers"         : resultat_scoring.get("dossiers", []),
-            "frameworks"       : resultat_scoring.get("frameworks", []),
-            "justification"    : "Détection par scoring uniquement (Ollama indisponible)",
-            "elements_cles"    : [],
-            "source"           : "scoring uniquement",
-            "candidat_scoring" : candidat,
-            "reponse_ollama"   : None,
-            "etait_en_conflit" : conflit.get("conflit", False)
+            "architecture": architecture_ollama,
+            "confiance": reponse_ollama["confiance"],
+            "scores": resultat_scoring.get("scores", {}),
+            "dossiers": resultat_scoring.get("dossiers", []),
+            "frameworks": resultat_scoring.get("frameworks", []),
+            "justification": reponse_ollama["justification"],
+            "elements_cles": reponse_ollama.get("elements_cles", []),
+            "source": "ollama (arbitrage de conflit)",
+            "candidat_scoring": resultat_scoring["architecture"],
+            "reponse_ollama": architecture_ollama,
+            "etait_en_conflit": True,
         }
+    
+    # Ollama propose une 3ème architecture non pertinente
+    return {
+        "architecture": resultat_scoring["architecture"],
+        "confiance": "faible",
+        "scores": resultat_scoring.get("scores", {}),
+        "dossiers": resultat_scoring.get("dossiers", []),
+        "frameworks": resultat_scoring.get("frameworks", []),
+        "justification": "Ollama rejeté (proposition hors périmètre)",
+        "elements_cles": [],
+        "source": "scoring (rejet Ollama)",
+        "candidat_scoring": resultat_scoring["architecture"],
+        "reponse_ollama": architecture_ollama,
+        "etait_en_conflit": True,
+    }
+
+
+def _traiter_reponse_normale(resultat_scoring: Dict, reponse_ollama: Dict) -> Dict:
+    """Traite la réponse Ollama dans un cas normal."""
+    candidat = resultat_scoring["architecture"]
+    architecture_ollama = reponse_ollama["architecture"]
+    confiance = resultat_scoring.get("confiance", "faible")
+    
+    # Accord entre scoring et Ollama
+    if architecture_ollama == candidat:
+        confiance_finale = CONFIANCE_BOOST.get(confiance, confiance)
+        return {
+            "architecture": architecture_ollama,
+            "confiance": confiance_finale,
+            "scores": resultat_scoring.get("scores", {}),
+            "dossiers": resultat_scoring.get("dossiers", []),
+            "frameworks": resultat_scoring.get("frameworks", []),
+            "justification": reponse_ollama["justification"],
+            "elements_cles": reponse_ollama.get("elements_cles", []),
+            "source": "scoring + ollama (accord)",
+            "candidat_scoring": candidat,
+            "reponse_ollama": architecture_ollama,
+            "etait_en_conflit": False,
+        }
+    
+    # Désaccord
+    scores = resultat_scoring.get("scores", {})
+    score_ollama = scores.get(architecture_ollama, 0)
+    
+    # Architecture proposée n'a aucun score
+    if score_ollama == 0:
+        return {
+            "architecture": candidat,
+            "confiance": "faible",
+            "scores": scores,
+            "dossiers": resultat_scoring.get("dossiers", []),
+            "frameworks": resultat_scoring.get("frameworks", []),
+            "justification": f"Scoring conservé (Ollama proposé {architecture_ollama} sans signal)",
+            "elements_cles": [],
+            "source": "scoring (Ollama rejeté)",
+            "candidat_scoring": candidat,
+            "reponse_ollama": architecture_ollama,
+            "etait_en_conflit": False,
+        }
+    
+    # Ollama très confiant
+    if reponse_ollama["confiance"] == "élevée":
+        return {
+            "architecture": architecture_ollama,
+            "confiance": reponse_ollama["confiance"],
+            "scores": scores,
+            "dossiers": resultat_scoring.get("dossiers", []),
+            "frameworks": resultat_scoring.get("frameworks", []),
+            "justification": reponse_ollama["justification"],
+            "elements_cles": reponse_ollama.get("elements_cles", []),
+            "source": "ollama (correction confiance élevée)",
+            "candidat_scoring": candidat,
+            "reponse_ollama": architecture_ollama,
+            "etait_en_conflit": False,
+        }
+    
+    # Désaccord sans confiance suffisante
+    return {
+        "architecture": candidat,
+        "confiance": "faible",
+        "scores": scores,
+        "dossiers": resultat_scoring.get("dossiers", []),
+        "frameworks": resultat_scoring.get("frameworks", []),
+        "justification": f"Scoring conservé (Ollama pas assez confiant: {reponse_ollama['confiance']})",
+        "elements_cles": [],
+        "source": "scoring (Ollama rejeté)",
+        "candidat_scoring": candidat,
+        "reponse_ollama": architecture_ollama,
+        "etait_en_conflit": False,
+    }

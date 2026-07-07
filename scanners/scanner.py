@@ -1,142 +1,217 @@
+# scanners/scanner.py
+"""
+Scanner de dépôt Git - clone et analyse la structure d'un repository.
+"""
+
 import git
 import os
 import stat
-from shutil import rmtree
 import gc
 import logging
+from shutil import rmtree
+from typing import Dict, List, Optional
 
-logging.basicConfig(level=logging.INFO)
+from constants import (
+    FICHIERS_STRATEGIQUES, EXTENSIONS_AST,
+    MAX_FICHIERS_AST, MAX_TAILLE_FICHIER, MAX_FICHIERS_TOTAL, TRONCATURE_STRATEGIQUE
+)
+
 logger = logging.getLogger(__name__)
 
-def forcer_suppression(dossier):
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONFIGURATION DEPUIS .ENV (override des constantes si présentes)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+DOSSIER_TEMP_DEFAUT = os.getenv("SCANNER_DOSSIER_TEMP", "./temp_repo")
+PROFONDEUR_CLONE = int(os.getenv("SCANNER_PROFONDEUR_CLONE", "1"))
+MAX_COMMITS = int(os.getenv("SCANNER_MAX_COMMITS", "100"))
+DEBUG_SCANNER = os.getenv("DEBUG_SCANNER", "false").lower() == "true"
+
+
+def extraire_extensions(fichiers: List[str]) -> List[str]:
     """
-    Supprime un dossier de manière forcée en gérant les permissions
+    Extrait les technologies détectées à partir des extensions de fichiers.
+    
+    Args:
+        fichiers: Liste des chemins de fichiers
+        
+    Returns:
+        Liste triée des technologies détectées
+    """
+    mapping = {
+        ".py": "Python", ".js": "JavaScript", ".ts": "TypeScript",
+        ".java": "Java", ".cpp": "C++", ".c": "C", ".cs": "C#",
+        ".go": "Go", ".rs": "Rust", ".php": "PHP", ".rb": "Ruby",
+        ".swift": "Swift", ".kt": "Kotlin",
+        ".html": "HTML", ".css": "CSS", ".scss": "SCSS",
+        ".vue": "Vue.js", ".jsx": "React", ".tsx": "React/TypeScript",
+        ".sql": "SQL", ".sh": "Shell",
+        ".yml": "YAML/CI-CD", ".yaml": "YAML/CI-CD",
+        ".json": "JSON", ".md": "Markdown", ".dockerfile": "Docker",
+    }
+
+    technologies = set()
+    for fichier in fichiers:
+        # Détection spéciale Dockerfile
+        if "dockerfile" in fichier.lower():
+            technologies.add("Docker")
+            continue
+        
+        ext = "." + fichier.split(".")[-1].lower() if "." in fichier else ""
+        if ext in mapping:
+            technologies.add(mapping[ext])
+
+    return sorted(list(technologies))
+
+
+def _forcer_suppression(dossier: str) -> None:
+    """
+    Force la suppression d'un dossier même en lecture seule.
+    
+    Args:
+        dossier: Chemin du dossier à supprimer
     """
     if not os.path.exists(dossier):
         return
-        
+    
     def gerer_erreur(func, path, exc_info):
         try:
             os.chmod(path, stat.S_IWRITE)
             func(path)
-        except PermissionError:
-            pass
         except Exception:
             pass
     
     gc.collect()
-    
     try:
         rmtree(dossier, onerror=gerer_erreur)
-        logger.info(f"{dossier} supprimé avec succès")
+        if DEBUG_SCANNER:
+            logger.debug(f"Dossier supprimé : {dossier}")
     except Exception as e:
-        logger.error(f"Erreur lors de la suppression de {dossier}: {e}")
+        logger.error(f"Erreur suppression {dossier}: {e}")
 
 
-FICHIERS_STRATEGIQUES = [
-    "requirements.txt", "Pipfile", "setup.py", "pyproject.toml",
-    "package.json", "package-lock.json",
-    "pom.xml", "build.gradle",
-    "composer.json",
-    "docker-compose.yml", "docker-compose.yaml", "Dockerfile",
-    "angular.json", ".angular-cli.json",
-    "Gemfile", "go.mod", "cargo.toml"
-]
-
-
-def lire_fichiers_strategiques(repo, fichiers: list) -> dict:
+def cloner_depot(url: str, dossier_temp: str = None) -> str:
     """
-    Lit le contenu des fichiers stratégiques uniquement.
-    Retourne un dict { chemin: contenu }
-    """
-    contenu = {}
+    Clone un dépôt Git localement.
     
+    Args:
+        url: URL du dépôt Git
+        dossier_temp: Dossier temporaire pour le clone
+        
+    Returns:
+        Chemin du dossier cloné
+    """
+    if dossier_temp is None:
+        dossier_temp = DOSSIER_TEMP_DEFAUT
+    
+    _forcer_suppression(dossier_temp)
+    logger.info(f"Clonage de {url}...")
+    
+    repo = git.Repo.clone_from(url, dossier_temp, depth=PROFONDEUR_CLONE)
+    repo.close()
+    logger.info(f"Dépôt cloné dans {dossier_temp}")
+    return dossier_temp
+
+
+def analyser_repo(url: str, dossier_temp: str = None) -> Dict:
+    """
+    Analyse un dépôt Git et extrait toutes les informations pertinentes.
+    
+    Args:
+        url: URL du dépôt Git
+        dossier_temp: Dossier temporaire pour le clone
+        
+    Returns:
+        Dictionnaire contenant les informations du dépôt
+    """
+    if dossier_temp is None:
+        dossier_temp = DOSSIER_TEMP_DEFAUT
+    
+    chemin_clone = cloner_depot(url, dossier_temp)
+    repo = git.Repo(chemin_clone)
+
+    # ═══════════ MÉTADONNÉES DU DÉPÔT ═══════════
+    repo_name = url.rstrip("/").split("/")[-1].replace(".git", "") if url else "Inconnu"
+
+    try:
+        author = repo.head.commit.author.name
+    except Exception:
+        author = "Inconnu"
+
+    try:
+        branch = repo.active_branch.name
+    except Exception:
+        branch = "main"
+
+    try:
+        commits = len(list(repo.iter_commits(max_count=MAX_COMMITS)))
+    except Exception:
+        commits = 0
+
+    # ═══════════ LISTE DES FICHIERS ═══════════
+    fichiers = []
+    try:
+        for item in repo.tree().traverse():
+            if item.type == "blob":
+                fichiers.append(item.path)
+                if len(fichiers) >= MAX_FICHIERS_TOTAL:
+                    logger.warning(f"Limite de {MAX_FICHIERS_TOTAL} fichiers atteinte")
+                    break
+    except Exception as e:
+        logger.warning(f"Erreur lecture fichiers: {e}")
+
+    # ═══════════ CONTENU DES FICHIERS ═══════════
+    contenu_strategique = {}
+    sources_ast = {}
+    compteur_ast = 0
+    fichiers_strategiques_lower = [f.lower() for f in FICHIERS_STRATEGIQUES]
+
     for chemin in fichiers:
         nom_fichier = chemin.split("/")[-1].lower()
-        est_strategique = nom_fichier in [f.lower() for f in FICHIERS_STRATEGIQUES]
-        
-        if est_strategique:
-            try:
-                blob = repo.tree() / chemin
+        ext = os.path.splitext(chemin)[1].lower()
+
+        try:
+            blob = repo.tree() / chemin
+            taille = blob.size
+
+            # Fichiers stratégiques
+            if nom_fichier in fichiers_strategiques_lower:
                 texte = blob.data_stream.read().decode("utf-8", errors="ignore")
-                contenu[chemin] = texte[:3000]
-                logger.info(f"Fichier stratégique lu : {chemin}")
-            except Exception as e:
-                logger.warning(f"Impossible de lire {chemin} : {e}")
-    
-    return contenu
+                contenu_strategique[chemin] = texte[:TRONCATURE_STRATEGIQUE]
+                if DEBUG_SCANNER:
+                    logger.debug(f"Fichier stratégique : {chemin}")
 
+            # Fichiers pour AST
+            if compteur_ast < MAX_FICHIERS_AST and ext in EXTENSIONS_AST and taille <= MAX_TAILLE_FICHIER:
+                texte = blob.data_stream.read().decode("utf-8", errors="ignore")
+                sources_ast[chemin] = texte
+                compteur_ast += 1
 
-def scanner_repo(chemin_ou_url):
-    """
-    Scanne un dépôt Git et retourne ses informations
-    """
-    dossier_local = "./temp_repo"
-    
-    logger.info(f"Clonage de {chemin_ou_url}...")
-    
-    try:
-        repo = git.Repo.clone_from(chemin_ou_url, dossier_local, depth=1)
-        
-        # ── Infos de base ─────────────────────────────────────────
-        try:
-            repo_name = repo.remotes.origin.url.split("/")[-1].replace(".git", "") if repo.remotes else chemin_ou_url.split("/")[-1]
-        except:
-            repo_name = "Inconnu"
-        
-        try:
-            author = repo.head.commit.author.name
-        except:
-            author = "Inconnu"
-        
-        try:
-            branch = repo.active_branch.name
-        except:
-            branch = "Inconnue"
-        
-        try:
-            commits = len(list(repo.iter_commits(max_count=100)))
-        except:
-            commits = 0
-        
-        # ── Liste des fichiers ────────────────────────────────────
-        fichiers = []
-        try:
-            for item in repo.tree().traverse():
-                if item.type == "blob":
-                    fichiers.append(item.path)
-                    if len(fichiers) >= 1000:
-                        logger.warning("Trop de fichiers, troncature...")
-                        break
         except Exception as e:
-            logger.warning(f"Erreur lors de la lecture des fichiers: {e}")
-            fichiers = ["Erreur de lecture des fichiers"]
-        
-        # ── Fichiers stratégiques ─────────────────────────────────
-        contenu_strategique = lire_fichiers_strategiques(repo, fichiers)
-        
-        # ── Dictionnaire final ────────────────────────────────────
-        structure = {
-            "repo_name"           : repo_name,
-            "author"              : author,
-            "branch"              : branch,
-            "commits"             : commits,
-            "fichiers"            : fichiers,
-            "contenu_strategique" : contenu_strategique,
-            "stars"               : 0,
-            "licence"             : "Non spécifiée",
-            "description"         : ""
-        }
-        
-        # ── Libérer les ressources ────────────────────────────────
-        repo.close()
-        del repo
-        gc.collect()
-        
-        logger.info(f"Scan terminé : {len(structure['fichiers'])} fichiers trouvés")
-        return structure
-        
-    except git.GitCommandError as e:
-        raise Exception(f"Erreur Git: {str(e)}")
-    except Exception as e:
-        raise Exception(f"Erreur lors du scan: {str(e)}")
+            if DEBUG_SCANNER:
+                logger.debug(f"Erreur lecture {chemin}: {e}")
+
+    # ═══════════ TECHNOLOGIES ═══════════
+    langages = extraire_extensions(fichiers)
+    
+    repo.close()
+    
+    logger.info(
+        f"Scan terminé : {len(fichiers)} fichiers, "
+        f"{commits} commits, {len(langages)} langages, "
+        f"{compteur_ast} fichiers AST"
+    )
+
+    return {
+        "repo_name": repo_name,
+        "author": author,
+        "branch": branch,
+        "commits": commits,
+        "fichiers": fichiers,
+        "contenu_strategique": contenu_strategique,
+        "sources_ast": sources_ast,
+        "langages": langages,
+        "stars": 0,  # Peut être enrichi via API GitHub
+        "licence": "Non spécifiée",  # Peut être enrichi
+        "description": "",  # Peut être enrichi
+    }

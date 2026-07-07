@@ -1,6 +1,7 @@
+#readme_generator.py
 import logging
 from .prompts          import PROMPT_README
-from .ollama_generator import generer
+from utils.ollama_client import generer
 
 logger = logging.getLogger(__name__)
 

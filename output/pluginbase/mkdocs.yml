@@ -1,0 +1,48 @@
+site_name: pluginbase
+nav:
+- Accueil: index.md
+- Vue d'ensemble: global.md
+- Architecture: architecture.md
+- Fichiers:
+  - docs:
+    - _themes:
+      - flask_theme_support: fichiers/docs/_themes/flask_theme_support.md
+      - index: fichiers/docs/_themes/index.md
+    - conf: fichiers/docs/conf.md
+    - index: fichiers/docs/index.md
+  - example:
+    - app1:
+      - plugins:
+        - index: fichiers/example/app1/plugins/index.md
+        - secret: fichiers/example/app1/plugins/secret.md
+    - app2:
+      - plugins:
+        - index: fichiers/example/app2/plugins/index.md
+        - randomstr: fichiers/example/app2/plugins/randomstr.md
+    - builtin_plugins:
+      - index: fichiers/example/builtin_plugins/index.md
+      - lowercase: fichiers/example/builtin_plugins/lowercase.md
+      - uppercase: fichiers/example/builtin_plugins/uppercase.md
+    - example: fichiers/example/example.md
+    - index: fichiers/example/index.md
+  - tests:
+    - tests:
+      - plugins:
+        - withresources:
+          - __init__: fichiers/tests/tests/plugins/withresources/__init__.md
+          - index: fichiers/tests/tests/plugins/withresources/index.md
+        - advanced: fichiers/tests/tests/plugins/advanced.md
+        - hello: fichiers/tests/tests/plugins/hello.md
+        - hello2: fichiers/tests/tests/plugins/hello2.md
+        - index: fichiers/tests/tests/plugins/index.md
+      - conftest: fichiers/tests/tests/conftest.md
+      - dummy: fichiers/tests/tests/dummy.md
+      - index: fichiers/tests/tests/index.md
+      - shutdown: fichiers/tests/tests/shutdown.md
+      - test_advanced: fichiers/tests/tests/test_advanced.md
+      - test_basics: fichiers/tests/tests/test_basics.md
+      - test_shutdown: fichiers/tests/tests/test_shutdown.md
+  - pluginbase: fichiers/pluginbase.md
+  - setup: fichiers/setup.md
+theme:
+  name: material
