@@ -1,0 +1,24 @@
+site_name: Calculatrice-en-java
+nav:
+- Accueil: index.md
+- Vue d'ensemble: global.md
+- Architecture: architecture.md
+- Fichiers:
+  - src:
+    - Affichage: fichiers/src/Affichage.md
+    - CalcEventAbout: fichiers/src/CalcEventAbout.md
+    - CalcEventButton: fichiers/src/CalcEventButton.md
+    - CalcEventClear: fichiers/src/CalcEventClear.md
+    - CalcEventImport: fichiers/src/CalcEventImport.md
+    - CalcEventMode: fichiers/src/CalcEventMode.md
+    - CalcEventRes: fichiers/src/CalcEventRes.md
+    - CalcEventShortcut: fichiers/src/CalcEventShortcut.md
+    - Calculatrice: fichiers/src/Calculatrice.md
+    - CalculatriceScientifique: fichiers/src/CalculatriceScientifique.md
+    - CalculatriceSimple: fichiers/src/CalculatriceSimple.md
+    - ModeleCalcul: fichiers/src/ModeleCalcul.md
+    - ReadCalcFile: fichiers/src/ReadCalcFile.md
+    - WriteCalcFile: fichiers/src/WriteCalcFile.md
+    - index: fichiers/src/index.md
+theme:
+  name: material

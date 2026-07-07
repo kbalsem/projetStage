@@ -1,32 +1,28 @@
-import requests
+# summarize_repo.py
 import logging
+from utils.ollama_client import generer
+from scanners.scanner import extraire_extensions
 
 logger = logging.getLogger(__name__)
-
-OLLAMA_URL   = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "llama3"
 
 
 def resumer_repo(data: dict) -> str:
     """
     Prend les données du scanner et génère un résumé IA via Ollama.
-    Retourne un texte de résumé en français.
+    Retourne un texte de résumé en français (3 phrases max).
     """
-
-    repo_name   = data.get("repo_name", "Inconnu")
-    author      = data.get("author", "Inconnu")
-    branch      = data.get("branch", "main")
-    commits     = data.get("commits", 0)
-    stars       = data.get("stars", 0)
-    licence     = data.get("licence", "Non spécifiée")
+    repo_name = data.get("repo_name", "Inconnu")
+    author = data.get("author", "Inconnu")
+    branch = data.get("branch", "main")
+    commits = data.get("commits", 0)
+    stars = data.get("stars", 0)
+    licence = data.get("licence", "Non spécifiée")
     description = data.get("description", "")
-    fichiers    = data.get("fichiers", [])
+    fichiers = data.get("fichiers", [])
 
-    # ─── Construire le prompt ──────────────────────────────────────
-    # On donne les infos du repo à Ollama pour qu'il génère un résumé
     extensions = extraire_extensions(fichiers)
 
-    prompt = f"""Tu es un assistant technique. Analyse ce dépôt Git et génère un résumé technique en français.
+    prompt = f"""Tu es un assistant technique. Analyse ce dépôt Git et génère un résumé TRÈS COURT en français.
 
 Informations du dépôt :
 - Nom : {repo_name}
@@ -40,90 +36,26 @@ Informations du dépôt :
 - Technologies détectées : {", ".join(extensions) if extensions else "Non détectées"}
 - Exemples de fichiers : {", ".join(fichiers[:10])}
 
-Génère un résumé technique structuré en français avec :
-1. Description générale du projet
-2. Technologies utilisées
-3. Structure du projet
-4. Points importants
+Génère un résumé en EXACTEMENT 3 phrases maximum, en français :
+1ère phrase : ce qu'est le projet.
+2ème phrase : les technologies utilisées.
+3ème phrase : un point notable sur la structure ou l'état du projet.
 
-Sois concis et professionnel."""
+IMPORTANT : pas de liste à puces, pas de titres, pas de retour à la ligne. Juste un seul paragraphe de 3 phrases maximum, direct et concis."""
 
     logger.info(f"Envoi du prompt à Ollama pour : {repo_name}")
 
-    # ─── Appel à Ollama ────────────────────────────────────────────
-    try:
-        reponse = requests.post(
-            OLLAMA_URL,
-            json={
-                "model"  : OLLAMA_MODEL,
-                "prompt" : prompt,
-                "stream" : False  # On attend la réponse complète
-            },
-            timeout=120  # 2 minutes max
-        )
+    resume = generer(
+        prompt=prompt,
+        max_tokens=200,
+        temperature=0.3,
+        timeout=120,
+        max_retries=1,
+        nettoyer=True
+    )
 
-        if reponse.status_code != 200:
-            raise Exception(f"Erreur Ollama : {reponse.status_code}")
+    if resume.startswith("[Erreur"):
+        raise Exception(resume)
 
-        resultat = reponse.json()
-        resume   = resultat.get("response", "").strip()
-
-        logger.info(f"Résumé généré avec succès pour : {repo_name}")
-        return resume
-
-    except requests.exceptions.ConnectionError:
-        raise Exception("Ollama n'est pas lancé. Exécutez 'ollama serve' dans un terminal.")
-    except requests.exceptions.Timeout:
-        raise Exception("Ollama a mis trop de temps à répondre (timeout 120s).")
-    except Exception as e:
-        raise Exception(f"Erreur lors du résumé IA : {str(e)}")
-
-
-def extraire_extensions(fichiers: list) -> list:
-    """
-    Extrait les extensions uniques des fichiers pour détecter les technologies
-    Ex: ["main.py", "index.js"] → ["Python", "JavaScript"]
-    """
-    # Mapping extension → technologie
-    mapping = {
-        ".py"    : "Python",
-        ".js"    : "JavaScript",
-        ".ts"    : "TypeScript",
-        ".java"  : "Java",
-        ".cpp"   : "C++",
-        ".c"     : "C",
-        ".cs"    : "C#",
-        ".go"    : "Go",
-        ".rs"    : "Rust",
-        ".php"   : "PHP",
-        ".rb"    : "Ruby",
-        ".swift" : "Swift",
-        ".kt"    : "Kotlin",
-        ".html"  : "HTML",
-        ".css"   : "CSS",
-        ".scss"  : "SCSS",
-        ".vue"   : "Vue.js",
-        ".jsx"   : "React",
-        ".tsx"   : "React/TypeScript",
-        ".sql"   : "SQL",
-        ".sh"    : "Shell",
-        ".yml"   : "YAML/CI-CD",
-        ".yaml"  : "YAML/CI-CD",
-        ".json"  : "JSON",
-        ".md"    : "Markdown",
-        ".dockerfile" : "Docker",
-    }
-
-    technologies = set()
-
-    for fichier in fichiers:
-        # Vérifier aussi si "Dockerfile" est dans le nom
-        if "dockerfile" in fichier.lower():
-            technologies.add("Docker")
-            continue
-
-        ext = "." + fichier.split(".")[-1].lower() if "." in fichier else ""
-        if ext in mapping:
-            technologies.add(mapping[ext])
-
-    return sorted(list(technologies))
+    logger.info(f"Résumé généré avec succès pour : {repo_name}")
+    return resume

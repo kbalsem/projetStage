@@ -1,216 +1,384 @@
+<!-- templates/resultat.html -->
 <!DOCTYPE html>
 <html lang="fr" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Résultat - GitDoc AI</title>
-
+    <title>{{ analyse.repo_name }} - Résultat | GitDoc AI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/css/themes.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/resultat.css">
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --nav-height: 56px;
+            --accent: #58a6ff;
+            --accent-glow: rgba(88, 166, 255, 0.15);
+            --card-radius: 16px;
+            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Space Grotesk', sans-serif; background: var(--bg-primary, #010409); color: var(--text-primary, #f0f6fc); }
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        .app-layout { display: flex; height: calc(100vh - var(--nav-height)); margin-top: var(--nav-height); overflow: hidden; }
+
+        .sidebar { width: var(--sidebar-width); min-width: var(--sidebar-width); height: 100%; background: var(--bg-card, #0d1117); border-right: 1px solid var(--border-color, #21262d); overflow-y: auto; padding: 1.25rem 0; display: flex; flex-direction: column; z-index: 10; transition: transform var(--transition-smooth); }
+        .sidebar-header { padding: 0 1.25rem 1.25rem; border-bottom: 1px solid var(--border-color, #21262d); margin-bottom: 0.75rem; }
+        .sidebar-header .repo-name { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted, #8b949e); font-weight: 600; word-break: break-all; display: flex; align-items: center; gap: 8px; }
+        .sidebar-header .repo-name::before { content: ''; width: 8px; height: 8px; background: #3fb950; border-radius: 50%; flex-shrink: 0; }
+        .sidebar-nav { list-style: none; padding: 0; margin: 0; flex: 1; }
+        .sidebar-nav li { margin: 2px 0; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 12px; padding: 11px 1.25rem; color: var(--text-secondary, #c9d1d9); text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: all var(--transition-fast); border-left: 3px solid transparent; cursor: pointer; border-radius: 0 8px 8px 0; margin-right: 8px; }
+        .sidebar-nav a:hover { background: rgba(88, 166, 255, 0.06); color: #f0f6fc; border-left-color: rgba(88, 166, 255, 0.5); }
+        .sidebar-nav a.active { background: var(--accent-glow); color: var(--accent); border-left-color: var(--accent); font-weight: 600; box-shadow: inset 0 0 20px rgba(88, 166, 255, 0.05); }
+        .sidebar-nav a .nav-icon { font-size: 1.15rem; width: 24px; text-align: center; flex-shrink: 0; }
+        .sidebar-nav a .nav-badge { margin-left: auto; background: var(--border-color, #21262d); color: var(--text-muted); font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+        .sidebar-footer { padding: 1rem 1.25rem; border-top: 1px solid var(--border-color, #21262d); font-size: 0.72rem; color: var(--text-muted, #8b949e); text-align: center; letter-spacing: 0.3px; }
+
+        .main-content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 2rem 2.5rem; background: var(--bg-primary, #010409); scroll-behavior: smooth; }
+        .main-content::-webkit-scrollbar { width: 6px; }
+        .main-content::-webkit-scrollbar-track { background: transparent; }
+        .main-content::-webkit-scrollbar-thumb { background: var(--border-color, #30363d); border-radius: 3px; }
+
+        .section-panel { display: none; animation: fadeSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .section-panel.active { display: block; }
+        @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: var(--bg-card, #0d1117); border: 1px solid var(--border-color, #21262d); border-radius: var(--card-radius); padding: 1.75rem; margin-bottom: 1.25rem; transition: border-color var(--transition-fast), box-shadow var(--transition-fast); }
+        .card:hover { border-color: rgba(88, 166, 255, 0.2); box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3); }
+        .card h2 { margin: 0 0 1rem 0; font-size: 1.15rem; font-weight: 600; color: var(--text-primary, #f0f6fc); display: flex; align-items: center; gap: 8px; }
+
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
+        .stat-item { background: var(--bg-primary, #010409); border-radius: 12px; padding: 1.25rem; text-align: center; border: 1px solid transparent; transition: all var(--transition-fast); }
+        .stat-item:hover { border-color: var(--border-color, #21262d); transform: translateY(-2px); }
+        .stat-item .number { font-size: 1.8rem; font-weight: 700; color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+        .stat-item .label { font-size: 0.78rem; color: var(--text-muted, #8b949e); margin-top: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.4px; }
+
+        .lang-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+        .lang-tag { background: linear-gradient(135deg, rgba(88, 166, 255, 0.12), rgba(88, 166, 255, 0.04)); color: var(--accent); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; border: 1px solid rgba(88, 166, 255, 0.2); transition: all var(--transition-fast); }
+        .lang-tag:hover { background: rgba(88, 166, 255, 0.2); border-color: rgba(88, 166, 255, 0.4); transform: translateY(-1px); }
+
+        #resume-ia-texte { line-height: 1.7; color: var(--text-secondary, #c9d1d9); padding: 1.25rem; background: var(--bg-primary, #010409); border-radius: 12px; border-left: 3px solid var(--accent); font-size: 0.92rem; }
+
+        .doc-fullscreen { position: fixed; top: var(--nav-height); left: 0; width: 100%; height: calc(100vh - var(--nav-height)); z-index: 100; background: #fff; display: none; flex-direction: column; }
+        .doc-fullscreen.active { display: flex; }
+        .doc-fullscreen-toolbar { display: flex; align-items: center; gap: 12px; padding: 10px 1.25rem; background: #161b22; border-bottom: 1px solid #21262d; flex-shrink: 0; }
+        .btn-close-doc { background: rgba(255,255,255,0.06); border: 1px solid #30363d; color: #c9d1d9; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all var(--transition-fast); display: flex; align-items: center; gap: 6px; }
+        .btn-close-doc:hover { background: #21262d; color: #f0f6fc; }
+        .doc-fullscreen-iframe { flex: 1; width: 100%; border: none; }
+
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; transition: all var(--transition-fast); text-decoration: none; font-family: 'Space Grotesk', sans-serif; }
+        .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 16px rgba(88, 166, 255, 0.3); }
+        .btn-primary:hover { background: #79b8ff; box-shadow: 0 6px 24px rgba(88, 166, 255, 0.4); transform: translateY(-2px); }
+        .btn-secondary { background: var(--border-color, #21262d); color: var(--text-primary, #f0f6fc); border: 1px solid var(--border-color, #30363d); }
+        .btn-secondary:hover { background: #30363d; border-color: #484f58; }
+        .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid transparent; }
+        .btn-ghost:hover { color: var(--text-primary); border-color: var(--border-color); }
+        .btn-sm { padding: 6px 14px; font-size: 0.8rem; border-radius: 8px; }
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 1rem; }
+
+        .sidebar-toggle { display: none; position: fixed; top: 64px; left: 12px; z-index: 20; background: var(--bg-card, #161b22); border: 1px solid var(--border-color, #21262d); color: var(--text-primary); border-radius: 10px; padding: 10px 14px; cursor: pointer; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9; backdrop-filter: blur(2px); }
+        .sidebar-overlay.show { display: block; }
+
+        .tree-children.collapsed { display: none; }
+        .tree-item { cursor: default; display: flex; align-items: center; gap: 6px; padding: 3px 4px; border-radius: 4px; transition: background var(--transition-fast); }
+        .tree-item.has-children { cursor: pointer; }
+        .tree-item.has-children:hover { background: rgba(255,255,255,0.03); }
+        .toggle-icon, .toggle-spacer { display: inline-block; width: 14px; font-size: 0.65rem; color: var(--text-muted); }
+        .name.status-moved { color: #eab308; font-weight: 500; }
+        .name.status-new { color: #a855f7; font-weight: 500; }
+        .name.status-deleted { color: #ef4444; text-decoration: line-through; }
+        .name.status-unchanged { color: inherit; }
+        .tree-item.dimmed { opacity: 0.25; transition: opacity 0.2s; }
+
+        /* ═══════ DOCS EXPLORER 3 COLONNES ═══════ */
+        .docs-explorer { display: grid; grid-template-columns: 260px 1fr 220px; height: calc(100vh - var(--nav-height) - 2rem); gap: 0; border: 1px solid var(--border-color, #21262d); border-radius: var(--card-radius); overflow: hidden; background: var(--bg-card, #0d1117); margin-top: 1rem; }
+        .docs-tree-panel { border-right: 1px solid var(--border-color); display: flex; flex-direction: column; overflow: hidden; background: var(--bg-card); }
+        .docs-search-box { padding: 0.75rem; border-bottom: 1px solid var(--border-color); position: relative; }
+        .docs-search-icon { position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; z-index: 1; }
+        .docs-search-box input { width: 100%; padding: 8px 12px 8px 32px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.82rem; font-family: 'Space Grotesk', sans-serif; transition: all 0.2s; }
+        .docs-search-box input:focus { outline: none; border-color: #58a6ff; box-shadow: 0 0 0 2px rgba(88,166,255,0.15); }
+        .docs-tree { flex: 1; overflow-y: auto; padding: 0.5rem 0; }
+        .docs-tree::-webkit-scrollbar { width: 4px; }
+        .docs-tree::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+        .docs-tree-loading { display: flex; align-items: center; gap: 10px; padding: 1.5rem 1rem; color: var(--text-muted); font-size: 0.8rem; }
+        .spinner { width: 16px; height: 16px; border: 2px solid var(--border-color); border-top-color: #58a6ff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .docs-tree-group { padding: 10px 1rem 4px; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); font-weight: 700; margin-top: 4px; }
+        .docs-tree-item { display: flex; align-items: center; gap: 8px; padding: 7px 1rem 7px 1.5rem; font-size: 0.83rem; color: var(--text-secondary); text-decoration: none; cursor: pointer; border-left: 3px solid transparent; transition: all 0.15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .docs-tree-item:hover { background: rgba(88,166,255,0.06); color: #f0f6fc; border-left-color: rgba(88,166,255,0.3); }
+        .docs-tree-item.active { background: rgba(88,166,255,0.12); color: #58a6ff; border-left-color: #58a6ff; font-weight: 600; }
+        .docs-tree-item.hidden-by-search { display: none; }
+
+        .docs-content-panel { display: flex; flex-direction: column; overflow: hidden; }
+        .docs-toolbar { display: flex; align-items: center; gap: 12px; padding: 10px 1.25rem; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; flex-shrink: 0; flex-wrap: wrap; min-height: 48px; }
+        .docs-current-page { font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
+        .docs-page-icon { font-size: 1rem; }
+        .docs-freshness-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.7rem; background: rgba(63,185,80,0.1); color: #3fb950; padding: 4px 12px; border-radius: 20px; font-weight: 500; white-space: nowrap; margin: 0 auto; }
+        .freshness-dot { width: 6px; height: 6px; background: #3fb950; border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .docs-toolbar-actions { margin-left: auto; display: flex; gap: 4px; }
+        .docs-iframe { flex: 1; width: 100%; border: none; background: #fff; }
+
+        .docs-toc-panel { border-left: 1px solid var(--border-color); padding: 1rem; overflow-y: auto; background: var(--bg-card); }
+        .docs-toc-panel::-webkit-scrollbar { width: 4px; }
+        .docs-toc-panel::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+        .docs-toc-header { padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+        .docs-toc-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700; }
+        .docs-toc-empty { font-size: 0.75rem; color: var(--text-muted); font-style: italic; padding: 0.5rem 0; }
+        .docs-toc a { display: block; padding: 5px 0 5px 12px; font-size: 0.78rem; color: var(--text-secondary); text-decoration: none; border-left: 2px solid transparent; transition: all 0.15s; line-height: 1.4; }
+        .docs-toc a.toc-h3 { padding-left: 24px; font-size: 0.72rem; color: var(--text-muted); }
+        .docs-toc a:hover { color: #58a6ff; }
+        .docs-toc a.active { color: #58a6ff; border-left-color: #58a6ff; font-weight: 600; background: rgba(88,166,255,0.05); }
+
+        @media (max-width: 1100px) { .docs-explorer { grid-template-columns: 220px 1fr 180px; } }
+        @media (max-width: 900px) { .docs-explorer { grid-template-columns: 1fr; } .docs-tree-panel, .docs-toc-panel { display: none; } }
+        @media (max-width: 768px) { .sidebar { position: fixed; left: calc(-1 * var(--sidebar-width)); top: var(--nav-height); height: calc(100vh - var(--nav-height)); box-shadow: 4px 0 24px rgba(0,0,0,0.5); } .sidebar.open { left: 0; } .sidebar-toggle { display: block; } .main-content { padding: 1rem; } .archi-card { flex-direction: column !important; } .transformation-grid { grid-template-columns: 1fr !important; } }
+    </style>
 </head>
 <body>
-
-    <!-- =====================================
-         NAVBAR
-    ===================================== -->
     <nav class="dashboard-nav">
-        <a href="/" class="nav-logo">
-            <div class="logo-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                    <path d="M2 17l10 5 10-5"/>
-                    <path d="M2 12l10 5 10-5"/>
-                </svg>
-            </div>
-            gitdoc<span class="logo-accent"></span>
-        </a>
-
-        <div class="dashboard-nav-actions">
-            <label class="switch" id="themeToggle" title="Changer le thème">
-                <input type="checkbox" id="themeCheckbox">
-                <span class="slider"></span>
-            </label>
-            <a href="/dashboard" class="btn btn-ghost btn-sm">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"/>
-                    <polyline points="12 19 5 12 12 5"/>
-                </svg>
-                Retour
-            </a>
-            <a href="/logout" class="btn btn-ghost btn-sm btn-logout">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                    <polyline points="16 17 21 12 16 7"/>
-                    <line x1="21" y1="12" x2="9" y2="12"/>
-                </svg>
-                Déconnexion
-            </a>
-        </div>
+        <a href="/" class="nav-logo"><div class="logo-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>gitdoc</a>
+        <div class="dashboard-nav-actions"><label class="switch"><input type="checkbox" id="themeCheckbox"><span class="slider"></span></label><a href="/dashboard" class="btn btn-ghost btn-sm">Retour</a><a href="/logout" class="btn btn-ghost btn-sm">Déconnexion</a></div>
     </nav>
-
-    <!-- =====================================
-         RESULTAT CONTAINER
-    ===================================== -->
-    <div class="resultat-container">
-
-        <div class="resultat-header">
-            <div class="resultat-breadcrumb">
-                <a href="/dashboard">Tableau de bord</a>
-                <span>/</span>
-                <span>Résultat</span>
-            </div>
-            <h1>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                    <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                Résultat de l'analyse
-            </h1>
-            <p class="text-muted">{{ analyse.repo_name }} • {{ analyse.date_analyse.strftime('%d/%m/%Y %H:%M') }}</p>
-        </div>
-
-        <div class="resultat-grid">
-            <!-- Carte : Résumé IA -->
-            <div class="card resultat-card">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8z"/>
-                            <circle cx="12" cy="10" r="3"/>
-                        </svg>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="app-layout" id="appLayout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><div class="repo-name">{{ analyse.repo_name }}</div></div>
+            <ul class="sidebar-nav">
+                <li><a onclick="showSection('documentation')" data-section="documentation" class="active"><span class="nav-icon">📖</span> Documentation</a></li>
+                <li><a onclick="showSection('architecture')" data-section="architecture"><span class="nav-icon">🏛</span> Architecture</a></li>
+                <li><a onclick="showSection('transformation')" data-section="transformation"><span class="nav-icon">🔄</span> Transformation<span class="nav-badge">{{ analyse.fichiers|default(0) }}</span></a></li>
+                <li><a onclick="showSection('resume-ia')" data-section="resume-ia"><span class="nav-icon">📝</span> Résumé IA</a></li>
+                <li><a onclick="showSection('statistiques')" data-section="statistiques"><span class="nav-icon">📊</span> Statistiques</a></li>
+            </ul>
+            <div class="sidebar-footer">GitDoc AI &copy; 2026</div>
+        </aside>
+        <main class="main-content" id="mainContent">
+            
+            <div class="section-panel active" id="section-documentation">
+                {% if analyse.documentation_disponible %}
+                <div class="docs-explorer" id="docsExplorer">
+                    <aside class="docs-tree-panel">
+                        <div class="docs-search-box">
+                            <svg class="docs-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                            <input type="text" id="docsSearchInput" placeholder="Filtrer les pages...">
+                        </div>
+                        <div class="docs-tree" id="docsTree"><div class="docs-tree-loading"><div class="spinner"></div><span>Chargement...</span></div></div>
+                    </aside>
+                    <div class="docs-content-panel">
+                        <div class="docs-toolbar">
+                            <span class="docs-current-page" id="docsCurrentPage"><span class="docs-page-icon">📖</span>{{ analyse.repo_name }}</span>
+                            <span class="docs-freshness-badge"><span class="freshness-dot"></span>Générée le {{ analyse.date_analyse.strftime('%d/%m/%Y') }}</span>
+                            <div class="docs-toolbar-actions">
+                                <a href="{{ url_for('voir_documentation', id=analyse.id) }}" target="_blank" class="btn btn-ghost btn-sm" title="Nouvel onglet"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
+                                <a href="/historique/{{ analyse.id }}/telecharger" class="btn btn-ghost btn-sm" title="Télécharger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></a>
+                                <button onclick="openDocFullscreen()" class="btn btn-ghost btn-sm" title="Plein écran"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+                            </div>
+                        </div>
+                        <iframe id="docsIframe" class="docs-iframe" src="{{ url_for('voir_documentation', id=analyse.id) }}" title="Documentation"></iframe>
                     </div>
-                    <h2>Résumé IA</h2>
+                    <aside class="docs-toc-panel">
+                        <div class="docs-toc-header"><span class="docs-toc-title">Sur cette page</span></div>
+                        <nav id="docsToc" class="docs-toc"><div class="docs-toc-empty">Naviguez dans la page</div></nav>
+                    </aside>
                 </div>
-                <div class="resultat-content">
-                    <p>{{ analyse.resume_ia }}</p>
-                </div>
-            </div>
-
-            <!-- Carte : Statistiques -->
-            <div class="card resultat-card">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="20" x2="18" y2="10"/>
-                            <line x1="12" y1="20" x2="12" y2="4"/>
-                            <line x1="6" y1="20" x2="6" y2="14"/>
-                        </svg>
-                    </div>
-                    <h2>Statistiques</h2>
-                </div>
-                <div class="resultat-stats">
-                    <div class="stat-item">
-                        <span class="stat-number">{{ analyse.commits }}</span>
-                        <span class="stat-label">Commits</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">{{ analyse.stars }}</span>
-                        <span class="stat-label">Stars</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">{{ analyse.langages|length }}</span>
-                        <span class="stat-label">Langages</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">{{ analyse.fichiers }}</span>
-                        <span class="stat-label">Fichiers</span>
-                    </div>
-                </div>
+                {% else %}
+                <div class="card"><div style="text-align:center;padding:4rem 2rem;"><div style="font-size:4rem;margin-bottom:1rem;">📄</div><h3>Documentation non disponible</h3><p class="text-muted">Lancez une analyse complète pour générer la documentation.</p><a href="/dashboard" class="btn btn-primary" style="margin-top:1rem;">← Retour</a></div></div>
+                {% endif %}
             </div>
 
-            <!-- Carte : Langages -->
-            <div class="card resultat-card">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="16 18 22 12 16 6"/>
-                            <polyline points="8 6 2 12 8 18"/>
-                        </svg>
-                    </div>
-                    <h2>Langages utilisés</h2>
-                </div>
-                <div class="resultat-content">
-                    <div class="langages-list">
-                        {% for lang in analyse.langages %}
-                            <span class="lang-tag">{{ lang }}</span>
-                        {% endfor %}
-                    </div>
-                </div>
+            <div class="section-panel" id="section-architecture">
+                <h1 style="font-size:1.75rem; margin-bottom:1.5rem;">🏛 Architecture détectée</h1>
+                {% set confiance_class = analyse.confiance_architecture | replace('é', 'e') | replace('è', 'e') %}
+                <div class="archi-card" style="margin-top:0;"><div><span class="archi-badge">🏛 Architecture détectée</span><div class="archi-name">{{ analyse.architecture }}</div><p class="archi-description">{{ analyse.description_architecture or "Cette architecture organise le code en séparant les responsabilités." }}</p></div><div><div class="archi-metrics"><div class="metric"><span class="value confiance-{{ confiance_class }}">{{ analyse.confiance_pourcentage|default(0) }}%</span><span class="label">Confiance</span></div><div class="metric"><span class="value">{{ analyse.score_total|default(0) }}</span><span class="label">Score / {{ analyse.score_max|default(210) }}</span></div><div class="metric"><span class="value">{{ analyse.signaux_detectes|default(0) }}</span><span class="label">Signaux</span></div><div class="metric"><span class="value">{{ analyse.conflits_detectes|default(0) }}</span><span class="label">Conflits</span></div></div>{% if analyse.conflits_detectes|default(0) > 0 %}<div class="conflict-warning"><span class="icon">⚠️</span><span>{{ analyse.message_conflit|default("Conflits détectés.") }}</span></div>{% endif %}</div><div class="archi-radar"><div class="radar-title">🎯 Comparaison</div>{% if analyse.radar_data %}{% for archi, pct in analyse.radar_data.items() %}<div class="radar-bar"><span class="name">{{ archi }}</span><div class="track"><div class="fill {{ 'high' if pct >= 80 else 'medium' if pct >= 40 else 'low' }}" style="width:0%;" data-width="{{ pct }}"></div></div><span class="pct"><span class="highlight">{{ pct }}</span>%</span></div>{% endfor %}{% else %}<p style="color:var(--text-muted);font-size:0.8rem;">Aucune donnée</p>{% endif %}</div></div>
             </div>
 
-            <!-- Carte : Architecture -->
-            <div class="card resultat-card resultat-card-full">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-                        </svg>
-                    </div>
-                    <h2>Architecture du projet</h2>
-                </div>
-                <div class="resultat-content">
-                    <pre class="architecture-tree">{{ analyse.architecture }}</pre>
-                </div>
+            <div class="section-panel" id="section-transformation">
+                {% set stats = analyse.get('stats_transfo', {}) %}
+                <div class="transformation-section"><div class="transformation-header"><h2>🔄 Transformation <span class="count">{{ analyse.fichiers|default(0) }} fichiers</span></h2><div class="comp-header-actions"><div class="pill-group"><button class="pill active" data-filter="all" onclick="filterTransform('all')">Tout</button><button class="pill" data-filter="moved" onclick="filterTransform('moved')">🟡 Déplacés</button><button class="pill" data-filter="new" onclick="filterTransform('new')">🟣 Nouveaux</button><button class="pill" data-filter="unchanged" onclick="filterTransform('unchanged')">🟢 Inchangés</button><button class="pill" data-filter="deleted" onclick="filterTransform('deleted')">🔴 Supprimés</button></div></div></div><div class="transformation-grid"><div class="transformation-panel"><div class="panel-title">📂 Structure originale</div><div class="tree-view" id="original-tree"></div></div><div class="transformation-panel"><div class="panel-title">🎯 Nouvelle architecture <span style="font-size:0.6rem;color:var(--text-muted);">{{ analyse.architecture }}</span></div><div class="tree-view" id="new-tree"></div></div></div><div class="transformation-stats"><div class="stat"><div class="number green">{{ stats.get('nouveaux_dossiers', 0) }}</div><div class="label">🟢 Nouveaux dossiers</div></div><div class="stat"><div class="number yellow">{{ stats.get('fichiers_deplaces', 0) }}</div><div class="label">🟡 Déplacés</div></div><div class="stat"><div class="number purple">{{ stats.get('fichiers_inchanges', 0) }}</div><div class="label">⚪ Inchangés</div></div><div class="stat"><div class="number red">{{ stats.get('fichiers_supprimes', 0) }}</div><div class="label">🔴 Supprimés</div></div></div></div>
             </div>
 
-            <!-- Carte : Documentation -->
-            <div class="card resultat-card resultat-card-full">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        </svg>
-                    </div>
-                    <h2>Documentation générée</h2>
-                    <a href="/download/{{ analyse.id }}" class="btn btn-primary btn-sm">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="7 10 12 15 17 10"/>
-                            <line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
-                        Télécharger
-                    </a>
-                </div>
-                <div class="resultat-content">
-                    <div class="doc-preview">
-                        <p>{{ analyse.documentation_preview }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <div class="section-panel" id="section-resume-ia"><div class="card"><h2>📝 Résumé IA</h2><p id="resume-ia-texte">{{ analyse.resume_ia or "Aucun résumé disponible." }}</p><button id="btn-resume-ia" class="btn btn-primary btn-sm" data-historique-id="{{ analyse.id }}" style="margin-top:1rem;">{{ '🔄 Régénérer' if analyse.resume_ia else '✨ Générer' }}</button></div></div>
 
+            <div class="section-panel" id="section-statistiques">
+                <div class="card"><h2>📊 Statistiques du projet</h2><div class="stat-grid"><div class="stat-item"><div class="number">{{ analyse.commits|default(0) }}</div><div class="label">Commits</div></div><div class="stat-item"><div class="number">{{ analyse.stars|default(0) }}</div><div class="label">Stars</div></div><div class="stat-item"><div class="number">{{ analyse.fichiers|default(0) }}</div><div class="label">Fichiers</div></div><div class="stat-item"><div class="number">{{ analyse.langages|length|default(0) }}</div><div class="label">Langages</div></div></div></div>
+                <div class="card"><h2>🔤 Langages détectés</h2><div class="lang-tags">{% for lang in analyse.langages|default([]) %}<span class="lang-tag">{{ lang }}</span>{% else %}<span class="text-muted">Aucun langage détecté</span>{% endfor %}</div></div>
+            </div>
+        </main>
     </div>
 
-    <!-- =====================================
-         FOOTER
-    ===================================== -->
-    <footer class="dashboard-footer">
-        <div>GitDoc AI</div>
-        <div class="mt-1">Documentation intelligente pour vos projets Git.</div>
-        <div class="mt-1">© 2026 GitDoc — Tous droits réservés.</div>
-    </footer>
+    <div class="doc-fullscreen" id="docFullscreen">
+        <div class="doc-fullscreen-toolbar"><button class="btn-close-doc" onclick="closeDocFullscreen()">✕ Fermer</button><span style="color:#c9d1d9;font-size:0.85rem;">📖 {{ analyse.repo_name }}</span><div style="margin-left:auto;display:flex;gap:8px;"><a href="{{ url_for('voir_documentation', id=analyse.id) }}" target="_blank" class="btn btn-primary btn-sm">🔗 Nouvel onglet</a><a href="/historique/{{ analyse.id }}/telecharger" class="btn btn-secondary btn-sm">📦 Télécharger</a></div></div>
+        <iframe id="docFullscreenIframe" src="" class="doc-fullscreen-iframe" title="Documentation"></iframe>
+    </div>
+
+    <script id="data-original" type="application/json">{{ analyse.get('arbre_original', none) | tojson | safe }}</script>
+    <script id="data-nouveau" type="application/json">{{ analyse.get('arbre_nouveau', none) | tojson | safe }}</script>
+    <script id="data-mappings" type="application/json">{{ analyse.get('mappings', []) | tojson | safe }}</script>
+    {% set stats = analyse.get('stats_transfo', {}) %}
+    <script id="data-stats" type="application/json">{"nouveaux_dossiers":{{ stats.get('nouveaux_dossiers',0)|tojson }},"fichiers_deplaces":{{ stats.get('fichiers_deplaces',0)|tojson }},"fichiers_inchanges":{{ stats.get('fichiers_inchanges',0)|tojson }},"fichiers_supprimes":{{ stats.get('fichiers_supprimes',0)|tojson }}}</script>
 
     <script>
-        (() => {
-            const checkbox = document.getElementById('themeCheckbox');
-            const html = document.documentElement;
-
-            const saved = localStorage.getItem('gitdoc-theme') || 'dark';
-            html.setAttribute('data-theme', saved);
-            checkbox.checked = (saved === 'dark');
-
-            checkbox.addEventListener('change', () => {
-                const next = checkbox.checked ? 'dark' : 'light';
-                html.setAttribute('data-theme', next);
-                localStorage.setItem('gitdoc-theme', next);
-            });
-        })();
+        var GITDOC_analyseId = parseInt("{{ analyse.id }}", 10);
+        var GITDOC_docUrl = "{{ url_for('voir_documentation', id=analyse.id) if analyse.documentation_disponible else '' }}";
     </script>
+    <script>
+        function readJsonScript(id, fallback) { var el = document.getElementById(id); if (!el) return fallback; try { return JSON.parse(el.textContent); } catch (e) { return fallback; } }
+        var originalData = readJsonScript('data-original', null);
+        var newData = readJsonScript('data-nouveau', null);
+        var mappings = readJsonScript('data-mappings', []);
 
+        function openDocFullscreen() { document.getElementById('docFullscreenIframe').src = GITDOC_docUrl; document.getElementById('docFullscreen').classList.add('active'); document.getElementById('sidebar').style.display = 'none'; document.getElementById('appLayout').style.display = 'none'; }
+        function closeDocFullscreen() { document.getElementById('docFullscreen').classList.remove('active'); document.getElementById('docFullscreenIframe').src = ''; document.getElementById('sidebar').style.display = ''; document.getElementById('appLayout').style.display = ''; }
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDocFullscreen(); });
+
+        function showSection(name) { document.querySelectorAll('.section-panel').forEach(function(p){p.classList.remove('active')}); var t=document.getElementById('section-'+name); if(t)t.classList.add('active'); document.querySelectorAll('.sidebar-nav a').forEach(function(l){l.classList.remove('active')}); var a=document.querySelector('[data-section="'+name+'"]'); if(a)a.classList.add('active'); if(window.innerWidth<=768){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('show')} if(name==='transformation')setTimeout(renderTransformationTrees,100); if(name==='architecture')setTimeout(animateRadarBars,200); }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('show'); }
+
+        (function(){var c=document.getElementById('themeCheckbox'),h=document.documentElement;var s=localStorage.getItem('gitdoc-theme')||'dark';h.setAttribute('data-theme',s);if(c){c.checked=(s==='dark');c.addEventListener('change',function(){var n=c.checked?'dark':'light';h.setAttribute('data-theme',n);localStorage.setItem('gitdoc-theme',n)})}})();
+
+        var btnResume=document.getElementById('btn-resume-ia');if(btnResume){btnResume.addEventListener('click',async function(){var id=this.dataset.historiqueId,btn=this,txt=document.getElementById('resume-ia-texte');if(!id||!txt)return;btn.disabled=true;btn.textContent='⏳ Génération...';try{var r=await fetch('/historique/'+id+'/generer-resume-ia',{method:'POST'});var d=await r.json();txt.textContent=d.succes?d.resume:'❌ '+(d.erreur||'Erreur');btn.textContent=d.succes?'🔄 Régénérer':'🔁 Réessayer'}catch(e){txt.textContent='❌ Erreur réseau.';btn.textContent='🔁 Réessayer'}btn.disabled=false})}
+
+        function buildStatusMap(m){var map={};(m||[]).forEach(function(x){if(x.to)map[x.to]=x.status});return map}
+        function renderTree(data,container,options){options=options||{};var sm=options.statusMap||{},depth=options.depth||0,pp=options.parentPath||'';if(!data||!data.children)return;data.children.forEach(function(child){var isDir=child.type==='directory',fp=pp?pp+'/'+child.name:child.name,status=sm[fp];var row=document.createElement('div');row.className='tree-item'+(isDir&&child.children&&child.children.length?' has-children':'');row.style.paddingLeft=(depth*16+8)+'px';if(status)row.dataset.status=status;var ti=(isDir&&child.children&&child.children.length)?'<span class="toggle-icon">▼</span>':'<span class="toggle-spacer"></span>';var sc=status?' status-'+status:'';row.innerHTML=ti+'<span class="icon">'+(isDir?'📁':'📄')+'</span><span class="name'+(isDir?' highlight':'')+sc+'">'+child.name+'</span>'+(isDir?'<span class="status unchanged">'+(child.children?child.children.length:0)+' él.</span>':'');container.appendChild(row);if(isDir&&child.children&&child.children.length){var cc=document.createElement('div');cc.className='tree-children';container.appendChild(cc);renderTree(child,cc,{statusMap:sm,depth:depth+1,parentPath:fp});row.addEventListener('click',function(e){e.stopPropagation();var coll=cc.classList.toggle('collapsed');var icon=row.querySelector('.toggle-icon');if(icon)icon.textContent=coll?'▶':'▼'})}})}
+        function filterTransform(type){document.querySelectorAll('#new-tree .tree-item[data-status]').forEach(function(r){r.classList.toggle('dimmed',type!=='all'&&r.dataset.status!==type)});document.querySelectorAll('.pill-group .pill').forEach(function(p){p.classList.toggle('active',p.dataset.filter===type)})}
+        function animateRadarBars(){document.querySelectorAll('.radar-bar .fill').forEach(function(b){var w=b.dataset.width;if(w){b.style.transition='width 1s ease-out';b.style.width=w+'%'}})}
+        function renderTransformationTrees(){var tc=document.getElementById('original-tree');if(tc&&originalData){tc.innerHTML='';renderTree(originalData,tc)}else if(tc){tc.innerHTML='<p style="color:var(--text-muted);padding:1rem;">Aucune structure</p>'}var nc=document.getElementById('new-tree');if(nc&&newData){nc.innerHTML='';renderTree(newData,nc,{statusMap:buildStatusMap(mappings)})}else if(nc){nc.innerHTML='<p style="color:var(--text-muted);padding:1rem;">Aucune architecture cible</p>'}}
+
+        // ═══════ DOCS EXPLORER 3 COLONNES ═══════
+        (function(){
+            var iframe=document.getElementById('docsIframe');
+            var arbreContainer=document.getElementById('docsTree');
+            var tocContainer=document.getElementById('docsToc');
+            var rechercheInput=document.getElementById('docsSearchInput');
+            var pageActuelleLabel=document.getElementById('docsCurrentPage');
+            if(!iframe)return;
+
+            var currentPageUrl = '';
+
+            // Charger la structure des pages
+            fetch('/historique/'+GITDOC_analyseId+'/documentation/structure')
+                .then(function(r){return r.json()})
+                .then(function(arbre){
+                    arbreContainer.innerHTML='';
+                    if(arbre&&arbre.length){
+                        renderArbreDocs(arbre,arbreContainer);
+                        var firstLink=arbreContainer.querySelector('.docs-tree-item');
+                        if(firstLink)firstLink.click();
+                    }else{
+                        arbreContainer.innerHTML='<p class="text-muted" style="padding:1rem;font-size:0.8rem;">Aucune page</p>';
+                    }
+                })
+                .catch(function(){
+                    arbreContainer.innerHTML='<p class="text-muted" style="padding:1rem;font-size:0.8rem;">Structure indisponible</p>';
+                });
+
+            function renderArbreDocs(noeuds,container,profondeur){
+                profondeur=profondeur||0;
+                noeuds.forEach(function(noeud){
+                    if(noeud.url){
+                        var lien=document.createElement('a');
+                        lien.className='docs-tree-item';
+                        lien.textContent=noeud.label;
+                        lien.style.paddingLeft=(1.5+profondeur*0.75)+'rem';
+                        lien.dataset.url=noeud.url;
+                        lien.addEventListener('click',function(){chargerPage(noeud.url,lien)});
+                        container.appendChild(lien);
+                    }else{
+                        var groupe=document.createElement('div');
+                        groupe.className='docs-tree-group';
+                        groupe.textContent=noeud.label;
+                        container.appendChild(groupe);
+                    }
+                    if(noeud.enfants&&noeud.enfants.length){
+                        renderArbreDocs(noeud.enfants,container,profondeur+1);
+                    }
+                });
+            }
+
+            function chargerPage(url,lienActif){
+                currentPageUrl = url;
+                iframe.src='/historique/'+GITDOC_analyseId+'/documentation/page/'+url;
+                document.querySelectorAll('.docs-tree-item').forEach(function(a){a.classList.remove('active')});
+                if(lienActif){lienActif.classList.add('active');lienActif.scrollIntoView({block:'nearest',behavior:'smooth'})}
+            }
+
+            if(rechercheInput){
+                rechercheInput.addEventListener('input',function(){
+                    var terme=rechercheInput.value.trim().toLowerCase();
+                    document.querySelectorAll('.docs-tree-item').forEach(function(a){
+                        a.classList.toggle('hidden-by-search',terme&&a.textContent.toLowerCase().indexOf(terme)===-1);
+                    });
+                });
+            }
+
+            // Gérer la navigation interne dans l'iframe
+            iframe.addEventListener('load',function(){
+                try{
+                    var doc=iframe.contentDocument;
+                    if(!doc){tocContainer.innerHTML='<div class="docs-toc-empty">Sommaire indisponible</div>';return;}
+
+                    // Mettre à jour le titre
+                    var titre=doc.querySelector('h1');
+                    if(titre)pageActuelleLabel.innerHTML='<span class="docs-page-icon">📖</span> '+titre.textContent;
+
+                    // Intercepter TOUS les liens pour la navigation interne
+                    doc.querySelectorAll('a').forEach(function(link){
+                        var href=link.getAttribute('href');
+                        if(href&&!href.startsWith('http')&&!href.startsWith('#')&&!href.startsWith('javascript:')&&!href.startsWith('mailto:')){
+                            link.addEventListener('click',function(e){
+                                e.preventDefault();
+                                // Construire le nouveau chemin
+                                var basePath='/historique/'+GITDOC_analyseId+'/documentation/page/';
+                                var currentDir=currentPageUrl?currentPageUrl.substring(0,currentPageUrl.lastIndexOf('/')+1):'';
+                                var newUrl;
+                                if(href.startsWith('/')){
+                                    newUrl=basePath+href.substring(1);
+                                }else{
+                                    newUrl=basePath+currentDir+href;
+                                }
+                                // Normaliser le chemin
+                                newUrl=newUrl.replace(/\/\.\//g,'/').replace(/\/+/g,'/');
+                                iframe.src=newUrl;
+                                currentPageUrl=newUrl.replace(basePath,'');
+                            });
+                        }
+                    });
+
+                    // Mettre à jour le TOC
+                    updateTOC(doc);
+                }catch(e){
+                    tocContainer.innerHTML='<div class="docs-toc-empty">Navigation externe</div>';
+                }
+            });
+
+            function updateTOC(doc){
+                var titres=doc.querySelectorAll('h2,h3');
+                tocContainer.innerHTML='';
+                if(titres.length===0){tocContainer.innerHTML='<div class="docs-toc-empty">Aucun titre</div>';return;}
+                titres.forEach(function(titre,i){
+                    if(!titre.id)titre.id='toc-heading-'+i;
+                    var lien=document.createElement('a');
+                    lien.textContent=titre.textContent;lien.href='#';
+                    lien.className=titre.tagName==='H3'?'toc-h3':'';
+                    lien.dataset.targetId=titre.id;
+                    lien.addEventListener('click',function(e){e.preventDefault();titre.scrollIntoView({behavior:'smooth',block:'start'})});
+                    tocContainer.appendChild(lien);
+                });
+                var observer=new IntersectionObserver(function(entries){
+                    entries.forEach(function(entry){if(entry.isIntersecting){document.querySelectorAll('.docs-toc a').forEach(function(a){a.classList.toggle('active',a.dataset.targetId===entry.target.id)})}})
+                },{rootMargin:'-80px 0px -70% 0px'});
+                titres.forEach(function(t){observer.observe(t)});
+            }
+        })();
+
+        document.addEventListener('DOMContentLoaded',function(){renderTransformationTrees();setTimeout(animateRadarBars,500)});
+    </script>
 </body>
 </html>
