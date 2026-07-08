@@ -60,8 +60,6 @@ class Historique(db.Model):
         except (json.JSONDecodeError, TypeError):
             return []
 
-    def set_langages(self, langages_list):
-        self.langages = json.dumps(langages_list)
 
     def get_tree(self):
         try:
@@ -69,8 +67,6 @@ class Historique(db.Model):
         except (json.JSONDecodeError, TypeError):
             return {}
 
-    def set_tree(self, tree_dict):
-        self.tree_json = json.dumps(tree_dict)
 
     def get_fichiers_liste(self):
         return aplatir_arbre(self.get_tree(), inclure_racine=False)

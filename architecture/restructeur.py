@@ -511,7 +511,7 @@ def construire_arbre_cible(arbre_original: dict,
     trier_arbre(arbre_cible)
 
     # Logs des statistiques
-    logger.info(f"Restructuration terminée :")
+    logger.info("Restructuration terminée :")
     logger.info(f"  - {stats['deplaces']} fichier(s) déplacé(s)")
     logger.info(f"  - {stats['inchanges']} fichier(s) inchangé(s)")
     logger.info(f"  - {stats['tests']} fichier(s) de test")

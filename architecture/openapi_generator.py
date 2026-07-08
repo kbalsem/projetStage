@@ -46,52 +46,7 @@ MOTIF_PARAM_OPENAPI = re.compile(r"\{([a-zA-Z_][a-zA-Z0-9_]*)\}")
 # FONCTIONS PRINCIPALES
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def generer_spec_openapi(
-    routes: List[dict],
-    nom_projet: str,
-    version: str = None,
-    description: Optional[str] = None,
-) -> dict:
-    """
-    Génère une spécification OpenAPI complète.
-    
-    Args:
-        routes: Liste des routes détectées
-        nom_projet: Nom du projet
-        version: Version de l'API (défaut: auto-détectée)
-        description: Description personnalisée
-        
-    Returns:
-        Spécification OpenAPI au format dictionnaire
-    """
-    if version is None:
-        version = OPENAPI_VERSION_API
-    
-    if description is None:
-        description = OPENAPI_DESCRIPTION_DEFAUT
-    
-    spec = {
-        "openapi": OPENAPI_VERSION,
-        "info": {
-            "title": f"{OPENAPI_TITRE_DEFAUT} — {nom_projet}",
-            "version": version,
-            "description": description,
-        },
-        "paths": {},
-    }
 
-    # Grouper les routes par chemin
-    routes_groupees = _grouper_routes_par_chemin(routes)
-
-    # Construire les paths OpenAPI
-    for chemin_brut, routes_du_chemin in routes_groupees.items():
-        chemin_normalise = _normaliser_chemin(chemin_brut)
-        spec["paths"][chemin_normalise] = _construire_operations(
-            routes_du_chemin, 
-            chemin_normalise
-        )
-
-    return spec
 
 
 def _grouper_routes_par_chemin(routes: List[dict]) -> Dict[str, List[dict]]:
@@ -221,51 +176,3 @@ def sauvegarder_spec(spec: dict, chemin_sortie: str) -> None:
     """
     with open(chemin_sortie, "w", encoding="utf-8") as f:
         json.dump(spec, f, indent=2, ensure_ascii=False)
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# TEST (exécuté uniquement si le fichier est lancé directement)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-if __name__ == "__main__":
-    from api_route_detector import detecter_routes
-
-    # Tests unitaires intégrés
-    exemple_flask = '''
-from flask import Flask
-app = Flask(__name__)
-
-@app.route("/users", methods=["GET"])
-def liste_utilisateurs():
-    return []
-
-@app.route("/users/<int:id>", methods=["POST"])
-def creer_utilisateur(id):
-    return {}
-
-@app.get("/health")
-def health_check():
-    return "ok"
-'''
-
-    exemple_fastapi = '''
-from fastapi import FastAPI
-app = FastAPI()
-
-@app.get("/items/{item_id}")
-def lire_item(item_id: int):
-    return {"item_id": item_id}
-'''
-
-    fichiers_test = {
-        "app/routes/users.py": exemple_flask,
-        "app/main.py": exemple_fastapi,
-    }
-
-    routes = detecter_routes(fichiers_test)
-    spec = generer_spec_openapi(routes, nom_projet="projet-demo")
-
-    print(json.dumps(spec, indent=2, ensure_ascii=False))
-
-    sauvegarder_spec(spec, "openapi_demo.json")
-    print("\n✅ Fichier openapi_demo.json généré avec succès.")

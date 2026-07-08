@@ -1,9 +1,20 @@
 # app.py
+"""
+app.py gère TOUTES les routes de l'application. Un seul fichier.
+
+Le seul changement par rapport à l'ancienne version : l'import se fait
+depuis `pipeline.py` (qui contient maintenant aussi ce qu'il y avait dans
+taches.py) au lieu de `taches.py`.
+
+Pas de cycle : pipeline.py n'importe jamais app.py. Le sens de dépendance
+est strictement à sens unique : app.py -> pipeline.py -> models.py.
+La variable `app` passée au thread est simplement la variable locale de ce
+module (pas un import), donc aucun risque de cycle à ce niveau non plus.
+"""
 import os
 import json
 import logging
 import threading
-from typing import Dict, List, Tuple, Optional
 import shutil
 import tempfile
 import yaml
@@ -11,12 +22,24 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from models import db, Utilisateurs, Historique
-from taches import executer_analyse, lister_fichiers_depuis_arbre
+from pipeline import (
+    executer_analyse,
+    lister_fichiers_depuis_arbre,
+    extraire_pourcentage_confiance,
+    calculer_radar_data,
+    calculer_score_global,
+    get_description_architecture,
+    calculer_stats_transformation,
+    detecter_conflits,
+    get_architecture_fallback,
+    convertir_nav_mkdocs,
+    scanner_dossier_site_complet,
+    SCORE_MAX,
+)
 from summarize_repo import resumer_repo
 from utils.auth import login_required
 from utils.db_helpers import get_historique_or_403
 from architecture.restructeur import construire_arbre_avec_mappings
-from architecture.signaux import SIGNAUX
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -27,70 +50,6 @@ app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
-
-SCORE_MAX = int(os.getenv("SCORE_MAX", "210"))
-SCORE_MULTIPLICATEUR_CONFIANCE = int(os.getenv("SCORE_MULTIPLICATEUR_CONFIANCE", "2"))
-SEUIL_CONFLIT_CONFIANCE = int(os.getenv("SEUIL_CONFLIT_CONFIANCE", "80"))
-PENALITE_CONFLIT_POINTS = int(os.getenv("PENALITE_CONFLIT_POINTS", "10"))
-
-ARCHITECTURES_DESCRIPTIONS = {
-    "MVC": "Le pattern Model-View-Controller sépare l'application en trois composants : le Modèle (données), la Vue (interface) et le Contrôleur (logique).",
-    "MVVM": "Model-View-ViewModel facilite la liaison de données entre la vue et le modèle via un ViewModel.",
-    "Clean Architecture": "Architecture en couches concentriques avec dépendances vers l'intérieur.",
-    "Hexagonale": "Architecture Ports & Adapters qui isole le cœur applicatif derrière des interfaces.",
-    "Microservices": "Architecture distribuée où chaque service est indépendant et communique via API.",
-    "Layered": "Architecture en couches classique (présentation, business, données).",
-    "MVP": "Model-View-Presenter — le Presenter gère toute la logique de l'interface utilisateur.",
-    "COUCHES": "Architecture en couches — Présentation / Métier / Données.",
-    "CLEAN": "Clean Architecture — Use Cases / Entities / Repositories.",
-    "MONOLITHIQUE": "Application monolithique — structure simple sans séparation claire en modules distincts.",
-}
-
-def extraire_pourcentage_confiance(confiance_str: Optional[str]) -> int:
-    if not confiance_str: return 0
-    try:
-        if '%' in confiance_str: return int(confiance_str.split('%')[0].split()[-1])
-        else: return int(confiance_str.split()[-1])
-    except (ValueError, IndexError): return 0
-
-def calculer_radar_data(architecture_detectee: str, confiance_pct: int) -> Dict[str, int]:
-    radar_data = {}
-    for archi_key in SIGNAUX.keys():
-        radar_data[archi_key] = confiance_pct if archi_key == architecture_detectee else 0
-    return radar_data
-
-def calculer_score_global(confiance_pct: int, nb_signaux: int, nb_conflits: int) -> int:
-    score = confiance_pct * SCORE_MULTIPLICATEUR_CONFIANCE - nb_conflits * PENALITE_CONFLIT_POINTS
-    return min(SCORE_MAX, max(0, score))
-
-def get_description_architecture(architecture: Optional[str]) -> str:
-    if not architecture: return "Architecture non détectée."
-    for archi_key, desc in ARCHITECTURES_DESCRIPTIONS.items():
-        if archi_key.lower() in architecture.lower(): return desc
-    return f"Architecture '{architecture}' détectée."
-
-def calculer_stats_transformation(mappings: List[dict]) -> Dict[str, int]:
-    stats = {"nouveaux_dossiers": 0, "fichiers_deplaces": 0, "fichiers_inchanges": 0, "fichiers_supprimes": 0}
-    for m in mappings:
-        if m.get("type") == "directory" and m["status"] == "new": stats["nouveaux_dossiers"] += 1
-        elif m["status"] == "moved": stats["fichiers_deplaces"] += 1
-        elif m["status"] == "unchanged": stats["fichiers_inchanges"] += 1
-        elif m["status"] == "deleted": stats["fichiers_supprimes"] += 1
-    return stats
-
-def detecter_conflits(radar_data: Dict[str, int], confiance_pct: int) -> Tuple[int, str]:
-    conflits, message = 0, ""
-    if confiance_pct < SEUIL_CONFLIT_CONFIANCE:
-        conflits += 1; message = f"Confiance faible ({confiance_pct}%)"
-    scores_eleves = [s for s in radar_data.values() if s > 60]
-    if len(scores_eleves) > 1:
-        conflits += 1; message = (message + " | " if message else "") + "Plusieurs architectures possibles"
-    if conflits > 0: message = "⚠️ " + message
-    return conflits, message
-
-def get_architecture_fallback() -> str:
-    architectures = list(SIGNAUX.keys())
-    return architectures[0] if architectures else "MVC"
 
 @app.context_processor
 def inject_user():
@@ -327,37 +286,10 @@ def structure_documentation(id):
     if os.path.exists(chemin_mkdocs_yml):
         try:
             with open(chemin_mkdocs_yml, 'r', encoding='utf-8') as f: config = yaml.safe_load(f)
-            arbre = _convertir_nav_mkdocs(config.get('nav', []))
+            arbre = convertir_nav_mkdocs(config.get('nav', []))
             if arbre: return jsonify(arbre)
         except Exception as e: logger.warning(f"Erreur mkdocs.yml: {e}")
-    return jsonify(_scanner_dossier_site_complet(historique.chemin_site_html))
-
-def _convertir_nav_mkdocs(nav, base=''):
-    resultat = []
-    for item in nav:
-        if isinstance(item, dict):
-            for label, valeur in item.items():
-                if isinstance(valeur, str): resultat.append({"label": label, "url": valeur.replace('.md', '.html'), "enfants": []})
-                elif isinstance(valeur, list): resultat.append({"label": label, "url": None, "enfants": _convertir_nav_mkdocs(valeur)})
-        elif isinstance(item, str): resultat.append({"label": item, "url": item, "enfants": []})
-    return resultat
-
-def _scanner_dossier_site_complet(chemin_site):
-    arbre = []
-    try:
-        for entree in sorted(os.listdir(chemin_site)):
-            chemin_complet = os.path.join(chemin_site, entree)
-            if entree.startswith('.') or entree in ('assets', 'search', 'stylesheets', 'javascripts', 'fonts', 'img'): continue
-            if os.path.isdir(chemin_complet):
-                enfants = _scanner_dossier_site_complet(chemin_complet)
-                if enfants: arbre.append({"label": entree.replace('_', ' ').title(), "url": None, "enfants": enfants})
-            elif entree.endswith('.html'):
-                label = entree.replace('.html', '').replace('_', ' ').title()
-                if entree == 'index.html': label = 'Accueil'
-                chemin_relatif = os.path.relpath(chemin_complet, chemin_site).replace('\\', '/')
-                arbre.append({"label": label, "url": chemin_relatif, "enfants": []})
-    except Exception as e: logger.error(f"Erreur scan: {e}")
-    return arbre
+    return jsonify(scanner_dossier_site_complet(historique.chemin_site_html))
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False)

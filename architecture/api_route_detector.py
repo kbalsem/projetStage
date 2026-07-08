@@ -4,7 +4,6 @@ Détecteur de routes API par analyse statique du code Python.
 
 Supporte Flask, FastAPI et autres frameworks Python avec décorateurs de route.
 """
-
 import ast
 import os
 from typing import Dict, List, Optional, Set

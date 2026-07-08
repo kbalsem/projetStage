@@ -1,0 +1,2087 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API détectée automatiquement — flask",
+    "version": "auto-détectée",
+    "description": "Documentation générée automatiquement par GitDoc AI"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Fonction détectée : index",
+        "description": "Détectée dans examples/celery/src/task_app/__init__.py (ligne 19) — framework : flask",
+        "tags": [
+          "task_app.__init__"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      },
+      "post": {
+        "summary": "Fonction détectée : index",
+        "description": "Détectée dans tests/test_request.py (ligne 12) — framework : fastapi_ou_flask",
+        "tags": [
+          "tests.test_request"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      },
+      "put": {
+        "summary": "Fonction détectée : index_put",
+        "description": "Détectée dans tests/test_basic.py (ligne 47) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      },
+      "options": {
+        "summary": "Fonction détectée : index",
+        "description": "Détectée dans tests/test_basic.py (ligne 121) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/home": {
+      "get": {
+        "summary": "Fonction détectée : index",
+        "description": "Détectée dans tests/test_async.py (ligne 45) — framework : flask",
+        "tags": [
+          "tests.test_async"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      },
+      "post": {
+        "summary": "Fonction détectée : index",
+        "description": "Détectée dans tests/test_async.py (ligne 45) — framework : flask",
+        "tags": [
+          "tests.test_async"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/error": {
+      "get": {
+        "summary": "Fonction détectée : do_error",
+        "description": "Détectée dans tests/test_user_error_handler.py (ligne 229) — framework : flask",
+        "tags": [
+          "tests.test_user_error_handler"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/more": {
+      "get": {
+        "summary": "Fonction détectée : more",
+        "description": "Détectée dans tests/test_basic.py (ligne 134) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      },
+      "post": {
+        "summary": "Fonction détectée : more",
+        "description": "Détectée dans tests/test_basic.py (ligne 134) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/nothing": {
+      "get": {
+        "summary": "Fonction détectée : do_nothing",
+        "description": "Détectée dans tests/test_basic.py (ligne 244) — framework : fastapi_ou_flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/clear": {
+      "get": {
+        "summary": "Fonction détectée : clear",
+        "description": "Détectée dans tests/test_basic.py (ligne 557) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/test": {
+      "get": {
+        "summary": "Fonction détectée : test",
+        "description": "Détectée dans tests/test_regression.py (ligne 16) — framework : flask",
+        "tags": [
+          "tests.test_regression"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/bump": {
+      "get": {
+        "summary": "Fonction détectée : bump",
+        "description": "Détectée dans tests/test_basic.py (ligne 501) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/read": {
+      "get": {
+        "summary": "Fonction détectée : read",
+        "description": "Détectée dans tests/test_basic.py (ligne 507) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/set": {
+      "get": {
+        "summary": "Fonction détectée : set_session",
+        "description": "Détectée dans tests/test_basic.py (ligne 540) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      },
+      "post": {
+        "summary": "Fonction détectée : set",
+        "description": "Détectée dans tests/test_reqctx.py (ligne 217) — framework : flask",
+        "tags": [
+          "tests.test_reqctx"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/get": {
+      "get": {
+        "summary": "Fonction détectée : get",
+        "description": "Détectée dans tests/test_reqctx.py (ligne 222) — framework : flask",
+        "tags": [
+          "tests.test_reqctx"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/getitem": {
+      "get": {
+        "summary": "Fonction détectée : getitem",
+        "description": "Détectée dans tests/test_basic.py (ligne 549) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/setdefault": {
+      "get": {
+        "summary": "Fonction détectée : setdefault",
+        "description": "Détectée dans tests/test_basic.py (ligne 553) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/vary-cookie-header-set": {
+      "get": {
+        "summary": "Fonction détectée : vary_cookie_header_set",
+        "description": "Détectée dans tests/test_basic.py (ligne 562) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/vary-header-set": {
+      "get": {
+        "summary": "Fonction détectée : vary_header_set",
+        "description": "Détectée dans tests/test_basic.py (ligne 569) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/no-vary-header": {
+      "get": {
+        "summary": "Fonction détectée : no_vary_header",
+        "description": "Détectée dans tests/test_basic.py (ligne 576) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/login": {
+      "get": {
+        "summary": "Fonction détectée : login",
+        "description": "Détectée dans examples/tutorial/flaskr/auth.py (ligne 84) — framework : flask",
+        "tags": [
+          "flaskr.auth"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      },
+      "post": {
+        "summary": "Fonction détectée : login",
+        "description": "Détectée dans examples/tutorial/flaskr/auth.py (ligne 84) — framework : flask",
+        "tags": [
+          "flaskr.auth"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/ignored": {
+      "get": {
+        "summary": "Fonction détectée : ignored",
+        "description": "Détectée dans tests/test_basic.py (ligne 607) — framework : fastapi_ou_flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/test/": {
+      "get": {
+        "summary": "Fonction détectée : test",
+        "description": "Détectée dans tests/test_basic.py (ligne 640) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/test_with_categories/": {
+      "get": {
+        "summary": "Fonction détectée : test_with_categories",
+        "description": "Détectée dans tests/test_basic.py (ligne 650) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/test_filter/": {
+      "get": {
+        "summary": "Fonction détectée : test_filter",
+        "description": "Détectée dans tests/test_basic.py (ligne 661) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/test_filters/": {
+      "get": {
+        "summary": "Fonction détectée : test_filters",
+        "description": "Détectée dans tests/test_basic.py (ligne 669) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/test_filters_without_returning_categories/": {
+      "get": {
+        "summary": "Fonction détectée : test_filters2",
+        "description": "Détectée dans tests/test_basic.py (ligne 680) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/forbidden": {
+      "get": {
+        "summary": "Fonction détectée : forbidden",
+        "description": "Détectée dans tests/test_user_error_handler.py (ligne 198) — framework : flask",
+        "tags": [
+          "tests.test_user_error_handler"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/1": {
+      "get": {
+        "summary": "Fonction détectée : index1",
+        "description": "Détectée dans tests/test_basic.py (ligne 1001) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/2": {
+      "get": {
+        "summary": "Fonction détectée : index2",
+        "description": "Détectée dans tests/test_basic.py (ligne 1005) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/3": {
+      "get": {
+        "summary": "Fonction détectée : index3",
+        "description": "Détectée dans tests/test_basic.py (ligne 1009) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/E1": {
+      "get": {
+        "summary": "Fonction détectée : raise_e1",
+        "description": "Détectée dans tests/test_basic.py (ligne 1036) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/E3": {
+      "get": {
+        "summary": "Fonction détectée : raise_e3",
+        "description": "Détectée dans tests/test_basic.py (ligne 1040) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/key": {
+      "get": {
+        "summary": "Fonction détectée : fail",
+        "description": "Détectée dans tests/test_basic.py (ligne 1059) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/abort": {
+      "get": {
+        "summary": "Fonction détectée : do_abort",
+        "description": "Détectée dans tests/test_user_error_handler.py (ligne 233) — framework : flask",
+        "tags": [
+          "tests.test_user_error_handler"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/fail": {
+      "get": {
+        "summary": "Fonction détectée : fail",
+        "description": "Détectée dans tests/test_basic.py (ligne 1089) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      },
+      "post": {
+        "summary": "Fonction détectée : index",
+        "description": "Détectée dans tests/test_basic.py (ligne 1131) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/text": {
+      "get": {
+        "summary": "Fonction détectée : from_text",
+        "description": "Détectée dans tests/test_basic.py (ligne 1142) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/bytes": {
+      "get": {
+        "summary": "Fonction détectée : hello_bytes",
+        "description": "Détectée dans tests/type_check/typing_route.py (ligne 21) — framework : flask",
+        "tags": [
+          "type_check.typing_route"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/full_tuple": {
+      "get": {
+        "summary": "Fonction détectée : from_full_tuple",
+        "description": "Détectée dans tests/test_basic.py (ligne 1150) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/text_headers": {
+      "get": {
+        "summary": "Fonction détectée : from_text_headers",
+        "description": "Détectée dans tests/test_basic.py (ligne 1158) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/text_status": {
+      "get": {
+        "summary": "Fonction détectée : from_text_status",
+        "description": "Détectée dans tests/test_basic.py (ligne 1162) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/response_headers": {
+      "get": {
+        "summary": "Fonction détectée : from_response_headers",
+        "description": "Détectée dans tests/test_basic.py (ligne 1166) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/response_status": {
+      "get": {
+        "summary": "Fonction détectée : from_response_status",
+        "description": "Détectée dans tests/test_basic.py (ligne 1175) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/wsgi": {
+      "get": {
+        "summary": "Fonction détectée : from_wsgi",
+        "description": "Détectée dans tests/test_basic.py (ligne 1179) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/dict": {
+      "get": {
+        "summary": "Fonction détectée : return_dict",
+        "description": "Détectée dans tests/test_json.py (ligne 95) — framework : flask",
+        "tags": [
+          "tests.test_json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/list": {
+      "get": {
+        "summary": "Fonction détectée : from_list",
+        "description": "Détectée dans tests/test_basic.py (ligne 1187) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/none": {
+      "get": {
+        "summary": "Fonction détectée : from_none",
+        "description": "Détectée dans tests/test_basic.py (ligne 1239) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/small_tuple": {
+      "get": {
+        "summary": "Fonction détectée : from_small_tuple",
+        "description": "Détectée dans tests/test_basic.py (ligne 1243) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/large_tuple": {
+      "get": {
+        "summary": "Fonction détectée : from_large_tuple",
+        "description": "Détectée dans tests/test_basic.py (ligne 1247) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/bad_type": {
+      "get": {
+        "summary": "Fonction détectée : from_bad_type",
+        "description": "Détectée dans tests/test_basic.py (ligne 1251) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/bad_wsgi": {
+      "get": {
+        "summary": "Fonction détectée : from_bad_wsgi",
+        "description": "Détectée dans tests/test_basic.py (ligne 1255) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/hello/{name}": {
+      "post": {
+        "summary": "Fonction détectée : hello",
+        "description": "Détectée dans tests/test_basic.py (ligne 1359) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/{path}": {
+      "get": {
+        "summary": "Fonction détectée : catch_all",
+        "description": "Détectée dans tests/test_basic.py (ligne 1480) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/{lang_code}/": {
+      "get": {
+        "summary": "Fonction détectée : index",
+        "description": "Détectée dans tests/test_blueprints.py (ligne 851) — framework : flask",
+        "tags": [
+          "tests.test_blueprints"
+        ],
+        "parameters": [
+          {
+            "name": "lang_code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/{lang_code}/about": {
+      "get": {
+        "summary": "Fonction détectée : about",
+        "description": "Détectée dans tests/test_blueprints.py (ligne 855) — framework : flask",
+        "tags": [
+          "tests.test_blueprints"
+        ],
+        "parameters": [
+          {
+            "name": "lang_code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/foo": {
+      "get": {
+        "summary": "Fonction détectée : foo",
+        "description": "Détectée dans tests/test_blueprints.py (ligne 289) — framework : flask",
+        "tags": [
+          "tests.test_blueprints"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/{page}": {
+      "get": {
+        "summary": "Fonction détectée : view",
+        "description": "Détectée dans tests/test_basic.py (ligne 1678) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/киртест": {
+      "get": {
+        "summary": "Fonction détectée : index",
+        "description": "Détectée dans tests/test_basic.py (ligne 1696) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/user/": {
+      "get": {
+        "summary": "Fonction détectée : user",
+        "description": "Détectée dans tests/test_basic.py (ligne 1722) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      },
+      "post": {
+        "summary": "Fonction détectée : user",
+        "description": "Détectée dans tests/test_basic.py (ligne 1722) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/foo/": {
+      "get": {
+        "summary": "Fonction détectée : foo",
+        "description": "Détectée dans tests/test_basic.py (ligne 1742) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/bar/": {
+      "get": {
+        "summary": "Fonction détectée : for_bar",
+        "description": "Détectée dans tests/test_basic.py (ligne 1746) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/bar/123": {
+      "get": {
+        "summary": "Fonction détectée : foo_bar_foo",
+        "description": "Détectée dans tests/test_blueprints.py (ligne 297) — framework : flask",
+        "tags": [
+          "tests.test_blueprints"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/{test}/": {
+      "get": {
+        "summary": "Fonction détectée : index",
+        "description": "Détectée dans tests/test_basic.py (ligne 1852) — framework : flask",
+        "tags": [
+          "tests.test_basic"
+        ],
+        "parameters": [
+          {
+            "name": "test",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/bar": {
+      "get": {
+        "summary": "Fonction détectée : foo_bar",
+        "description": "Détectée dans tests/test_blueprints.py (ligne 293) — framework : flask",
+        "tags": [
+          "tests.test_blueprints"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/about": {
+      "get": {
+        "summary": "Fonction détectée : about",
+        "description": "Détectée dans tests/test_blueprints.py (ligne 166) — framework : flask",
+        "tags": [
+          "tests.test_blueprints"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/page/{page}": {
+      "get": {
+        "summary": "Fonction détectée : something",
+        "description": "Détectée dans tests/test_blueprints.py (ligne 276) — framework : flask",
+        "tags": [
+          "tests.test_blueprints"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/bar/foo": {
+      "get": {
+        "summary": "Fonction détectée : bar_foo",
+        "description": "Détectée dans tests/test_blueprints.py (ligne 301) — framework : flask",
+        "tags": [
+          "tests.test_blueprints"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/bp": {
+      "get": {
+        "summary": "Fonction détectée : bp_endpoint",
+        "description": "Détectée dans tests/test_blueprints.py (ligne 787) — framework : flask",
+        "tags": [
+          "tests.test_blueprints"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/{args}": {
+      "get": {
+        "summary": "Fonction détectée : index",
+        "description": "Détectée dans tests/test_converters.py (ligne 19) — framework : flask",
+        "tags": [
+          "tests.test_converters"
+        ],
+        "parameters": [
+          {
+            "name": "args",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/{name}": {
+      "get": {
+        "summary": "Fonction détectée : index",
+        "description": "Détectée dans tests/test_converters.py (ligne 38) — framework : fastapi_ou_flask",
+        "tags": [
+          "tests.test_converters"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/{self}": {
+      "get": {
+        "summary": "Fonction détectée : index",
+        "description": "Détectée dans tests/test_helpers.py (ligne 157) — framework : flask",
+        "tags": [
+          "tests.test_helpers"
+        ],
+        "parameters": [
+          {
+            "name": "self",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/json": {
+      "post": {
+        "summary": "Fonction détectée : return_json",
+        "description": "Détectée dans tests/test_json.py (ligne 40) — framework : flask",
+        "tags": [
+          "tests.test_json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      },
+      "get": {
+        "summary": "Fonction détectée : hello_json",
+        "description": "Détectée dans tests/type_check/typing_route.py (ligne 26) — framework : flask",
+        "tags": [
+          "type_check.typing_route"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/kw": {
+      "get": {
+        "summary": "Fonction détectée : return_kwargs",
+        "description": "Détectée dans tests/test_json.py (ligne 91) — framework : flask",
+        "tags": [
+          "tests.test_json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/args_unpack": {
+      "get": {
+        "summary": "Fonction détectée : return_args_unpack",
+        "description": "Détectée dans tests/test_json.py (ligne 119) — framework : flask",
+        "tags": [
+          "tests.test_json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/array": {
+      "get": {
+        "summary": "Fonction détectée : return_array",
+        "description": "Détectée dans tests/test_json.py (ligne 123) — framework : flask",
+        "tags": [
+          "tests.test_json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/add": {
+      "post": {
+        "summary": "Fonction détectée : add",
+        "description": "Détectée dans examples/celery/src/task_app/views.py (ligne 21) — framework : fastapi_ou_flask",
+        "tags": [
+          "task_app.views"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/meh": {
+      "get": {
+        "summary": "Fonction détectée : meh",
+        "description": "Détectée dans tests/test_reqctx.py (ligne 111) — framework : flask",
+        "tags": [
+          "tests.test_reqctx"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/set_dynamic_cookie": {
+      "post": {
+        "summary": "Fonction détectée : set_dynamic_cookie",
+        "description": "Détectée dans tests/test_reqctx.py (ligne 227) — framework : flask",
+        "tags": [
+          "tests.test_reqctx"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/get_dynamic_cookie": {
+      "get": {
+        "summary": "Fonction détectée : get_dynamic_cookie",
+        "description": "Détectée dans tests/test_reqctx.py (ligne 232) — framework : flask",
+        "tags": [
+          "tests.test_reqctx"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/index": {
+      "get": {
+        "summary": "Fonction détectée : index",
+        "description": "Détectée dans tests/test_testing.py (ligne 74) — framework : flask",
+        "tags": [
+          "tests.test_testing"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/redirect": {
+      "get": {
+        "summary": "Fonction détectée : index",
+        "description": "Détectée dans tests/test_testing.py (ligne 141) — framework : flask",
+        "tags": [
+          "tests.test_testing"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/target": {
+      "get": {
+        "summary": "Fonction détectée : get_session",
+        "description": "Détectée dans tests/test_testing.py (ligne 146) — framework : flask",
+        "tags": [
+          "tests.test_testing"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/other": {
+      "get": {
+        "summary": "Fonction détectée : other",
+        "description": "Détectée dans tests/test_testing.py (ligne 208) — framework : flask",
+        "tags": [
+          "tests.test_testing"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/action": {
+      "post": {
+        "summary": "Fonction détectée : action",
+        "description": "Détectée dans tests/test_testing.py (ligne 240) — framework : flask",
+        "tags": [
+          "tests.test_testing"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/echo": {
+      "post": {
+        "summary": "Fonction détectée : echo",
+        "description": "Détectée dans tests/test_testing.py (ligne 252) — framework : flask",
+        "tags": [
+          "tests.test_testing"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/hello": {
+      "post": {
+        "summary": "Fonction détectée : hello",
+        "description": "Détectée dans tests/test_testing.py (ligne 271) — framework : flask",
+        "tags": [
+          "tests.test_testing"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      },
+      "get": {
+        "summary": "Fonction détectée : hello",
+        "description": "Détectée dans examples/tutorial/flaskr/__init__.py (ligne 26) — framework : flask",
+        "tags": [
+          "flaskr.__init__"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/{company_id}": {
+      "get": {
+        "summary": "Fonction détectée : view",
+        "description": "Détectée dans tests/test_testing.py (ligne 312) — framework : flask",
+        "tags": [
+          "tests.test_testing"
+        ],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/custom": {
+      "get": {
+        "summary": "Fonction détectée : do_custom",
+        "description": "Détectée dans tests/test_user_error_handler.py (ligne 225) — framework : flask",
+        "tags": [
+          "tests.test_user_error_handler"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/keyerror": {
+      "get": {
+        "summary": "Fonction détectée : key_error",
+        "description": "Détectée dans tests/test_user_error_handler.py (ligne 47) — framework : flask",
+        "tags": [
+          "tests.test_user_error_handler"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/parent": {
+      "get": {
+        "summary": "Fonction détectée : parent_test",
+        "description": "Détectée dans tests/test_user_error_handler.py (ligne 81) — framework : flask",
+        "tags": [
+          "tests.test_user_error_handler"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/child-unregistered": {
+      "get": {
+        "summary": "Fonction détectée : unregistered_test",
+        "description": "Détectée dans tests/test_user_error_handler.py (ligne 85) — framework : flask",
+        "tags": [
+          "tests.test_user_error_handler"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/child-registered": {
+      "get": {
+        "summary": "Fonction détectée : registered_test",
+        "description": "Détectée dans tests/test_user_error_handler.py (ligne 89) — framework : flask",
+        "tags": [
+          "tests.test_user_error_handler"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/forbidden-registered": {
+      "get": {
+        "summary": "Fonction détectée : registered_test",
+        "description": "Détectée dans tests/test_user_error_handler.py (ligne 121) — framework : flask",
+        "tags": [
+          "tests.test_user_error_handler"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/forbidden-unregistered": {
+      "get": {
+        "summary": "Fonction détectée : unregistered_test",
+        "description": "Détectée dans tests/test_user_error_handler.py (ligne 125) — framework : flask",
+        "tags": [
+          "tests.test_user_error_handler"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/undefined": {
+      "get": {
+        "summary": "Fonction détectée : bp_registered_test",
+        "description": "Détectée dans tests/test_user_error_handler.py (ligne 177) — framework : flask",
+        "tags": [
+          "tests.test_user_error_handler"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/slash/": {
+      "get": {
+        "summary": "Fonction détectée : slash",
+        "description": "Détectée dans tests/test_user_error_handler.py (ligne 202) — framework : flask",
+        "tags": [
+          "tests.test_user_error_handler"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/raise": {
+      "get": {
+        "summary": "Fonction détectée : do_raise",
+        "description": "Détectée dans tests/test_user_error_handler.py (ligne 237) — framework : flask",
+        "tags": [
+          "tests.test_user_error_handler"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/str": {
+      "get": {
+        "summary": "Fonction détectée : hello_str",
+        "description": "Détectée dans tests/type_check/typing_route.py (ligne 16) — framework : flask",
+        "tags": [
+          "type_check.typing_route"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/json/dict": {
+      "get": {
+        "summary": "Fonction détectée : hello_json_list",
+        "description": "Détectée dans tests/type_check/typing_route.py (ligne 36) — framework : flask",
+        "tags": [
+          "type_check.typing_route"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/typed-dict": {
+      "get": {
+        "summary": "Fonction détectée : typed_dict",
+        "description": "Détectée dans tests/type_check/typing_route.py (ligne 45) — framework : flask",
+        "tags": [
+          "type_check.typing_route"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/generator": {
+      "get": {
+        "summary": "Fonction détectée : hello_generator",
+        "description": "Détectée dans tests/type_check/typing_route.py (ligne 50) — framework : flask",
+        "tags": [
+          "type_check.typing_route"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/generator-expression": {
+      "get": {
+        "summary": "Fonction détectée : hello_generator_expression",
+        "description": "Détectée dans tests/type_check/typing_route.py (ligne 59) — framework : flask",
+        "tags": [
+          "type_check.typing_route"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/iterator": {
+      "get": {
+        "summary": "Fonction détectée : hello_iterator",
+        "description": "Détectée dans tests/type_check/typing_route.py (ligne 64) — framework : flask",
+        "tags": [
+          "type_check.typing_route"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "summary": "Fonction détectée : tuple_status",
+        "description": "Détectée dans tests/type_check/typing_route.py (ligne 69) — framework : flask",
+        "tags": [
+          "type_check.typing_route"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/status/{code}": {
+      "get": {
+        "summary": "Fonction détectée : tuple_status",
+        "description": "Détectée dans tests/type_check/typing_route.py (ligne 70) — framework : flask",
+        "tags": [
+          "type_check.typing_route"
+        ],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/status-enum": {
+      "get": {
+        "summary": "Fonction détectée : tuple_status_enum",
+        "description": "Détectée dans tests/type_check/typing_route.py (ligne 75) — framework : flask",
+        "tags": [
+          "type_check.typing_route"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/headers": {
+      "get": {
+        "summary": "Fonction détectée : tuple_headers",
+        "description": "Détectée dans tests/type_check/typing_route.py (ligne 80) — framework : flask",
+        "tags": [
+          "type_check.typing_route"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/template": {
+      "get": {
+        "summary": "Fonction détectée : return_template_stream",
+        "description": "Détectée dans tests/type_check/typing_route.py (ligne 91) — framework : flask",
+        "tags": [
+          "type_check.typing_route"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/template/{name}": {
+      "get": {
+        "summary": "Fonction détectée : return_template",
+        "description": "Détectée dans tests/type_check/typing_route.py (ligne 86) — framework : flask",
+        "tags": [
+          "type_check.typing_route"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/async": {
+      "get": {
+        "summary": "Fonction détectée : async_route",
+        "description": "Détectée dans tests/type_check/typing_route.py (ligne 96) — framework : flask",
+        "tags": [
+          "type_check.typing_route"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/<any(xhr, jquery, fetch):js>": {
+      "get": {
+        "summary": "Fonction détectée : index",
+        "description": "Détectée dans examples/javascript/js_example/views.py (ligne 9) — framework : flask",
+        "tags": [
+          "js_example.views"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/register": {
+      "get": {
+        "summary": "Fonction détectée : register",
+        "description": "Détectée dans examples/tutorial/flaskr/auth.py (ligne 46) — framework : flask",
+        "tags": [
+          "flaskr.auth"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      },
+      "post": {
+        "summary": "Fonction détectée : register",
+        "description": "Détectée dans examples/tutorial/flaskr/auth.py (ligne 46) — framework : flask",
+        "tags": [
+          "flaskr.auth"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/logout": {
+      "get": {
+        "summary": "Fonction détectée : logout",
+        "description": "Détectée dans examples/tutorial/flaskr/auth.py (ligne 112) — framework : flask",
+        "tags": [
+          "flaskr.auth"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/create": {
+      "get": {
+        "summary": "Fonction détectée : create",
+        "description": "Détectée dans examples/tutorial/flaskr/blog.py (ligne 60) — framework : flask",
+        "tags": [
+          "flaskr.blog"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      },
+      "post": {
+        "summary": "Fonction détectée : create",
+        "description": "Détectée dans examples/tutorial/flaskr/blog.py (ligne 60) — framework : flask",
+        "tags": [
+          "flaskr.blog"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/{id}/update": {
+      "get": {
+        "summary": "Fonction détectée : update",
+        "description": "Détectée dans examples/tutorial/flaskr/blog.py (ligne 86) — framework : flask",
+        "tags": [
+          "flaskr.blog"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      },
+      "post": {
+        "summary": "Fonction détectée : update",
+        "description": "Détectée dans examples/tutorial/flaskr/blog.py (ligne 86) — framework : flask",
+        "tags": [
+          "flaskr.blog"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/{id}/delete": {
+      "post": {
+        "summary": "Fonction détectée : delete",
+        "description": "Détectée dans examples/tutorial/flaskr/blog.py (ligne 113) — framework : flask",
+        "tags": [
+          "flaskr.blog"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/result/{id}": {
+      "get": {
+        "summary": "Fonction détectée : result",
+        "description": "Détectée dans examples/celery/src/task_app/views.py (ligne 10) — framework : fastapi_ou_flask",
+        "tags": [
+          "task_app.views"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type exact non déterminé par analyse statique"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/block": {
+      "post": {
+        "summary": "Fonction détectée : block",
+        "description": "Détectée dans examples/celery/src/task_app/views.py (ligne 29) — framework : fastapi_ou_flask",
+        "tags": [
+          "task_app.views"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    },
+    "/process": {
+      "post": {
+        "summary": "Fonction détectée : process",
+        "description": "Détectée dans examples/celery/src/task_app/views.py (ligne 35) — framework : fastapi_ou_flask",
+        "tags": [
+          "task_app.views"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Réponse détectée par analyse statique"
+          }
+        }
+      }
+    }
+  }
+}

@@ -9,7 +9,7 @@ en se basant sur son nom et son contenu AST.
 import logging
 import os
 import re
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -208,19 +208,19 @@ def deviner_role_par_contenu(infos_ast_fichier: dict,
         for c in classes
     ):
         if DEBUG_CLASSIFIEUR:
-            logger.debug(f"  → Rôle trouvé par contenu: errors (classes d'erreur)")
+            logger.debug("  → Rôle trouvé par contenu: errors (classes d'erreur)")
         return ["errors", "exceptions"]
     
     # 2. Détecter les controllers par imports
     if any(mot in imports_txt for mot in IMPORTS_CONTROLLER):
         if DEBUG_CLASSIFIEUR:
-            logger.debug(f"  → Rôle trouvé par contenu: controller (imports)")
+            logger.debug("  → Rôle trouvé par contenu: controller (imports)")
         return ["controller", "route", "handlers"]
     
     # 3. Détecter les repositories par imports
     if any(mot in imports_txt for mot in IMPORTS_REPOSITORY):
         if DEBUG_CLASSIFIEUR:
-            logger.debug(f"  → Rôle trouvé par contenu: repository (imports)")
+            logger.debug("  → Rôle trouvé par contenu: repository (imports)")
         return ["repository", "data", "donnees"]
     
     # 4. Détecter l'infrastructure par dossier parent
@@ -229,25 +229,25 @@ def deviner_role_par_contenu(infos_ast_fichier: dict,
 
     if dans_dossier_infra and classes:
         if DEBUG_CLASSIFIEUR:
-            logger.debug(f"  → Rôle trouvé par contenu: infrastructure (dossier + classes)")
+            logger.debug("  → Rôle trouvé par contenu: infrastructure (dossier + classes)")
         return ["infrastructure", "infra", "utils"]
     
     # 5. Détecter les modèles par imports
     if any(mot in imports_txt for mot in IMPORTS_MODEL):
         if DEBUG_CLASSIFIEUR:
-            logger.debug(f"  → Rôle trouvé par contenu: model (imports)")
+            logger.debug("  → Rôle trouvé par contenu: model (imports)")
         return ["model", "entities", "domain"]
     
     # 6. Si classes mais pas de pattern spécifique → probablement un modèle
     if classes:
         if DEBUG_CLASSIFIEUR:
-            logger.debug(f"  → Rôle trouvé par contenu: model (classes génériques)")
+            logger.debug("  → Rôle trouvé par contenu: model (classes génériques)")
         return ["model", "entities", "domain"]
 
     # 7. Si fonctions sans classes → probablement un service
     if fonctions and not classes:
         if DEBUG_CLASSIFIEUR:
-            logger.debug(f"  → Rôle trouvé par contenu: service (fonctions sans classes)")
+            logger.debug("  → Rôle trouvé par contenu: service (fonctions sans classes)")
         return ["service", "business", "metier"]
 
     return None

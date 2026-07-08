@@ -1,12 +1,10 @@
 # architecture/rapport.py
 """
-Générateur de rapport de détection d'architecture.
-
 Produit un rapport Markdown détaillé de l'analyse architecturale.
 """
 
 import os
-from typing import Dict, Optional
+from typing import Dict
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONFIGURATION DEPUIS .ENV

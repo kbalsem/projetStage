@@ -2,14 +2,21 @@
 """
 Pipeline principal d'analyse et de génération de documentation.
 
-Orchestre l'ensemble du processus : scan → détection → analyse → documentation → publication.
+Fichier UNIQUE qui gère absolument tout ce qui concerne l'analyse d'un
+dépôt : orchestration du pipeline (scan -> détection -> AST -> doc ->
+mkdocs -> publication) ET l'exécution en arrière-plan qui met à jour la
+base de données (fusion de l'ancien pipeline.py + taches.py).
+
+Ce fichier n'importe jamais app.py. C'est app.py qui l'importe. Le sens
+de dépendance est donc à sens unique : app.py -> pipeline.py.
 """
 
 import logging
 import subprocess
 import os
 import shutil
-from typing import Dict, Optional
+import json
+from typing import Dict, List, Tuple, Optional
 
 from generation.ecrivain import ecrire_documentation_complete, nettoyer_nom_repo
 from generation.mkdocs_generator import generer_mkdocs_yml
@@ -26,6 +33,11 @@ from architecture.api_route_detector import detecter_routes
 from architecture.openapi_generator import generer_spec_openapi
 from generation.swagger_page_generator import generer_page_swagger
 
+from architecture.classifieur_fichiers import deviner_role
+from utils.tree_utils import aplatir_arbre, trier_arbre
+from architecture.signaux import SIGNAUX
+from models import db, Historique
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -40,47 +52,57 @@ BRANCHE_DEFAUT = os.getenv("PIPELINE_BRANCHE_DEFAUT", "docs/auto-generated")
 MKDOCS_BUILD_TIMEOUT = int(os.getenv("PIPELINE_MKDOCS_BUILD_TIMEOUT", "120"))
 DEBUG_PIPELINE = os.getenv("DEBUG_PIPELINE", "false").lower() == "true"
 
+SCORE_MAX = int(os.getenv("SCORE_MAX", "210"))
+SCORE_MULTIPLICATEUR_CONFIANCE = int(os.getenv("SCORE_MULTIPLICATEUR_CONFIANCE", "2"))
+SEUIL_CONFLIT_CONFIANCE = int(os.getenv("SEUIL_CONFLIT_CONFIANCE", "80"))
+PENALITE_CONFLIT_POINTS = int(os.getenv("PENALITE_CONFLIT_POINTS", "10"))
+
+ARCHITECTURES_DESCRIPTIONS = {
+    "MVC": "Le pattern Model-View-Controller sépare l'application en trois composants : le Modèle (données), la Vue (interface) et le Contrôleur (logique).",
+    "MVVM": "Model-View-ViewModel facilite la liaison de données entre la vue et le modèle via un ViewModel.",
+    "Clean Architecture": "Architecture en couches concentriques avec dépendances vers l'intérieur.",
+    "Hexagonale": "Architecture Ports & Adapters qui isole le cœur applicatif derrière des interfaces.",
+    "Microservices": "Architecture distribuée où chaque service est indépendant et communique via API.",
+    "Layered": "Architecture en couches classique (présentation, business, données).",
+    "MVP": "Model-View-Presenter — le Presenter gère toute la logique de l'interface utilisateur.",
+    "COUCHES": "Architecture en couches — Présentation / Métier / Données.",
+    "CLEAN": "Clean Architecture — Use Cases / Entities / Repositories.",
+    "MONOLITHIQUE": "Application monolithique — structure simple sans séparation claire en modules distincts.",
+}
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# FONCTIONS UTILITAIRES
+# FONCTIONS UTILITAIRES — CONSTRUCTION D'ARBRES
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def _adapter_fichiers_pour_detection(sources_ast) -> Dict:
     """Adapte le format des sources AST pour la détection de routes API."""
     if isinstance(sources_ast, dict):
         return sources_ast
-    
+
     if isinstance(sources_ast, list):
         return {
             item["path"]: item["content"]
             for item in sources_ast
             if isinstance(item, dict) and "path" in item and "content" in item
         }
-    
+
     logger.warning("Format de sources_ast non reconnu pour la détection API.")
     return {}
 
 
 def _build_tree_from_files(fichiers: list) -> dict:
-    """
-    Construit un arbre simple à partir d'une liste de chemins de fichiers.
-    
-    Args:
-        fichiers: Liste de chemins comme ["app.py", "models/user.py", ...]
-        
-    Returns:
-        Arbre au format {name, type, children}
-    """
+    """Construit un arbre simple à partir d'une liste de chemins de fichiers."""
     arbre = {
         "name": "Projet",
         "type": "directory",
         "children": []
     }
-    
+
     for chemin in fichiers:
         parties = chemin.replace("\\", "/").split("/")
         _inserer_dans_arbre(arbre, parties)
-    
+
     return arbre
 
 
@@ -88,13 +110,12 @@ def _inserer_dans_arbre(noeud: dict, parties: list) -> None:
     """Insère un chemin dans l'arbre (récursif)."""
     if not parties:
         return
-    
+
     nom = parties[0]
     reste = parties[1:]
-    
-    # Chercher si le noeud existe déjà
+
     enfant = next((e for e in noeud.get("children", []) if e["name"] == nom), None)
-    
+
     if enfant is None:
         enfant = {
             "name": nom,
@@ -102,53 +123,183 @@ def _inserer_dans_arbre(noeud: dict, parties: list) -> None:
             "children": [] if reste else None
         }
         noeud.setdefault("children", []).append(enfant)
-    
+
     if reste:
         _inserer_dans_arbre(enfant, reste)
 
 
-def _adapter_infos_ast_pour_architecture_cible(infos_ast: dict, 
+def _adapter_infos_ast_pour_architecture_cible(infos_ast: dict,
                                                 arbre_cible: dict) -> dict:
-    """
-    Ré-indexe les infos AST selon les chemins de l'architecture cible.
-    
-    Args:
-        infos_ast: Dictionnaire {chemin_original: infos}
-        arbre_cible: Arbre restructuré cible
-        
-    Returns:
-        Dictionnaire {chemin_cible: infos}
-    """
+    """Ré-indexe les infos AST selon les chemins de l'architecture cible."""
     from architecture.restructeur import _collecter_fichiers
-    
-    # Collecter tous les fichiers de l'arbre cible
+
     fichiers_cibles = _collecter_fichiers(arbre_cible)
-    
-    # Créer un index par nom de fichier original
+
     index_par_nom = {}
     for chemin_original, infos in infos_ast.items():
         nom_fichier = chemin_original.split("/")[-1]
         if nom_fichier not in index_par_nom:
             index_par_nom[nom_fichier] = []
         index_par_nom[nom_fichier].append((chemin_original, infos))
-    
-    # Ré-indexer selon les chemins cibles
+
     infos_cibles = {}
     for fichier_cible in fichiers_cibles:
         nom = fichier_cible["nom"]
         chemin_cible = "/".join(fichier_cible["dossier_parts"] + [nom])
-        
+
         if nom in index_par_nom:
-            # Prendre la première correspondance
             _, infos = index_par_nom[nom][0]
             infos_cibles[chemin_cible] = infos
-    
+
     logger.info(f"Infos AST ré-indexées : {len(infos_cibles)} fichiers cibles")
     return infos_cibles
 
 
+def lister_fichiers_depuis_arbre(arbre: dict) -> list:
+    """Aplatie un tree_json en liste de chemins (rétrocompatibilité)."""
+    return aplatir_arbre(arbre, inclure_racine=False)
+
+
+def extraire_resume(readme: str, longueur_max: int = 500) -> str:
+    """Extrait un résumé court du README généré."""
+    if not readme:
+        return ""
+
+    lignes = [l.strip() for l in readme.splitlines()]
+    paragraphes = []
+    for ligne in lignes:
+        if ligne.startswith("#"):
+            continue
+        if ligne:
+            paragraphes.append(ligne)
+        if sum(len(p) for p in paragraphes) >= longueur_max:
+            break
+
+    resume = " ".join(paragraphes)
+    return resume[:longueur_max].rstrip() + ("…" if len(resume) > longueur_max else "")
+
+
+def construire_tree_json(data_scanner: dict, infos_ast: dict = None) -> dict:
+    """Construit l'arborescence JSON complète avec rôles des fichiers."""
+    fichiers = data_scanner.get("fichiers", [])
+    repo_name = data_scanner.get("repo_name", "projet")
+    infos_ast = infos_ast or {}
+
+    def ajouter_chemin(arbre, chemin_parts, chemin_complet):
+        if not chemin_parts:
+            return
+        nom = chemin_parts[0]
+        reste = chemin_parts[1:]
+
+        enfant = next((e for e in arbre.get("children", []) if e["name"] == nom), None)
+
+        if enfant is None:
+            if len(reste) == 0:
+                role = deviner_role(chemin_complet, infos_ast.get(chemin_complet))
+                enfant = {"name": nom, "type": "file", "role": role, "children": []}
+            else:
+                enfant = {"name": nom, "type": "directory", "children": []}
+            arbre.setdefault("children", []).append(enfant)
+
+        if reste:
+            ajouter_chemin(enfant, reste, chemin_complet)
+
+    arbre = {"name": repo_name, "type": "directory", "children": []}
+
+    for fichier in fichiers:
+        chemin = fichier.replace("\\", "/")
+        ajouter_chemin(arbre, chemin.split("/"), chemin)
+
+    trier_arbre(arbre)
+    logger.info(f"Tree JSON construit : {len(fichiers)} fichiers")
+    return arbre
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
-# PIPELINE PRINCIPAL
+# INTERPRÉTATION DES RÉSULTATS (score, radar, conflits) — anciennement dans app.py
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def extraire_pourcentage_confiance(confiance_str: Optional[str]) -> int:
+    if not confiance_str: return 0
+    try:
+        if '%' in confiance_str: return int(confiance_str.split('%')[0].split()[-1])
+        else: return int(confiance_str.split()[-1])
+    except (ValueError, IndexError): return 0
+
+def calculer_radar_data(architecture_detectee: str, confiance_pct: int) -> Dict[str, int]:
+    radar_data = {}
+    for archi_key in SIGNAUX.keys():
+        radar_data[archi_key] = confiance_pct if archi_key == architecture_detectee else 0
+    return radar_data
+
+def calculer_score_global(confiance_pct: int, nb_signaux: int, nb_conflits: int) -> int:
+    score = confiance_pct * SCORE_MULTIPLICATEUR_CONFIANCE - nb_conflits * PENALITE_CONFLIT_POINTS
+    return min(SCORE_MAX, max(0, score))
+
+def get_description_architecture(architecture: Optional[str]) -> str:
+    if not architecture: return "Architecture non détectée."
+    for archi_key, desc in ARCHITECTURES_DESCRIPTIONS.items():
+        if archi_key.lower() in architecture.lower(): return desc
+    return f"Architecture '{architecture}' détectée."
+
+def calculer_stats_transformation(mappings: List[dict]) -> Dict[str, int]:
+    stats = {"nouveaux_dossiers": 0, "fichiers_deplaces": 0, "fichiers_inchanges": 0, "fichiers_supprimes": 0}
+    for m in mappings:
+        if m.get("type") == "directory" and m["status"] == "new": stats["nouveaux_dossiers"] += 1
+        elif m["status"] == "moved": stats["fichiers_deplaces"] += 1
+        elif m["status"] == "unchanged": stats["fichiers_inchanges"] += 1
+        elif m["status"] == "deleted": stats["fichiers_supprimes"] += 1
+    return stats
+
+def detecter_conflits(radar_data: Dict[str, int], confiance_pct: int) -> Tuple[int, str]:
+    conflits, message = 0, ""
+    if confiance_pct < SEUIL_CONFLIT_CONFIANCE:
+        conflits += 1; message = f"Confiance faible ({confiance_pct}%)"
+    scores_eleves = [s for s in radar_data.values() if s > 60]
+    if len(scores_eleves) > 1:
+        conflits += 1; message = (message + " | " if message else "") + "Plusieurs architectures possibles"
+    if conflits > 0: message = "⚠️ " + message
+    return conflits, message
+
+def get_architecture_fallback() -> str:
+    architectures = list(SIGNAUX.keys())
+    return architectures[0] if architectures else "MVC"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# NAVIGATION DE LA DOC GÉNÉRÉE (mkdocs) — anciennement dans app.py
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def convertir_nav_mkdocs(nav, base=''):
+    resultat = []
+    for item in nav:
+        if isinstance(item, dict):
+            for label, valeur in item.items():
+                if isinstance(valeur, str): resultat.append({"label": label, "url": valeur.replace('.md', '.html'), "enfants": []})
+                elif isinstance(valeur, list): resultat.append({"label": label, "url": None, "enfants": convertir_nav_mkdocs(valeur)})
+        elif isinstance(item, str): resultat.append({"label": item, "url": item, "enfants": []})
+    return resultat
+
+def scanner_dossier_site_complet(chemin_site):
+    arbre = []
+    try:
+        for entree in sorted(os.listdir(chemin_site)):
+            chemin_complet = os.path.join(chemin_site, entree)
+            if entree.startswith('.') or entree in ('assets', 'search', 'stylesheets', 'javascripts', 'fonts', 'img'): continue
+            if os.path.isdir(chemin_complet):
+                enfants = scanner_dossier_site_complet(chemin_complet)
+                if enfants: arbre.append({"label": entree.replace('_', ' ').title(), "url": None, "enfants": enfants})
+            elif entree.endswith('.html'):
+                label = entree.replace('.html', '').replace('_', ' ').title()
+                if entree == 'index.html': label = 'Accueil'
+                chemin_relatif = os.path.relpath(chemin_complet, chemin_site).replace('\\', '/')
+                arbre.append({"label": label, "url": chemin_relatif, "enfants": []})
+    except Exception as e: logger.error(f"Erreur scan: {e}")
+    return arbre
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PIPELINE PRINCIPAL (analyse + génération de doc)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def pipeline_complet(
@@ -162,8 +313,7 @@ def pipeline_complet(
     prive: bool = False
 ) -> Dict:
     """Pipeline complet d'analyse et de génération de documentation."""
-    
-    # Valeurs par défaut
+
     if dossier_sortie is None:
         dossier_sortie = DOSSIER_SORTIE_DEFAUT
     if plateforme is None:
@@ -194,14 +344,9 @@ def pipeline_complet(
     # ═══════════ ÉTAPE 3bis : RÉ-INDEXATION POUR ARCHITECTURE CIBLE ═══════════
     print("\n🎯 3bis. Adaptation à l'architecture cible...")
     from architecture.restructeur import construire_arbre_cible
-    
-    # Construire l'arbre original à partir de la liste de fichiers
+
     arbre_original = _build_tree_from_files(data_scanner["fichiers"])
-    
-    # Construire l'arbre cible
     arbre_cible = construire_arbre_cible(arbre_original, resultat_archi["architecture"])
-    
-    # Ré-indexer les infos AST selon l'arbre cible
     infos_ast_cibles = _adapter_infos_ast_pour_architecture_cible(infos_ast, arbre_cible)
     print(f"   → {len(infos_ast_cibles)} fichiers dans l'architecture cible")
 
@@ -254,11 +399,10 @@ def pipeline_complet(
     )
     print(f"   → mkdocs.yml généré : {chemin_mkdocs}")
 
-    # ═══════════ ÉTAPE 6bis : BUILD HTML (AVEC NETTOYAGE) ═══════════
+    # ═══════════ ÉTAPE 6bis : BUILD HTML ═══════════
     print("\n🏗️ 6bis. Build du site HTML MkDocs...")
     chemin_site_html = None
 
-    # ✅ SUPPRIMER L'ANCIEN BUILD POUR ÉVITER LE CACHE
     site_dir = os.path.join(racine_doc, "site")
     if os.path.isdir(site_dir):
         shutil.rmtree(site_dir)
@@ -275,9 +419,8 @@ def pipeline_complet(
         )
         chemin_site_html = os.path.join(racine_doc, "site")
         print(f"   → Site HTML généré : {chemin_site_html}")
-        
+
         if DEBUG_PIPELINE:
-            # Vérifier qu'il n'y a pas d'index.html imbriqués (mode dossier)
             index_files = []
             for root, dirs, files in os.walk(chemin_site_html):
                 if 'index.html' in files and root != chemin_site_html:
@@ -286,7 +429,7 @@ def pipeline_complet(
                 logger.warning(f"Fichiers index.html imbriqués détectés : {index_files}")
             else:
                 logger.info("✅ Aucun index.html imbriqué - build propre")
-                
+
     except FileNotFoundError:
         logger.error("MkDocs n'est pas installé. Exécutez: pip install mkdocs mkdocs-material")
     except subprocess.TimeoutExpired:
@@ -299,7 +442,6 @@ def pipeline_complet(
 
     print(f"\n✅ Documentation générée dans : {racine_doc}")
 
-    # ═══════════ RÉSULTAT ═══════════
     resultat = {
         "data_scanner": data_scanner,
         "resultat_archi": resultat_archi,
@@ -353,3 +495,60 @@ def pipeline_complet(
             print(f"   → Nouveau dépôt créé : {resultat_publication['url_nouveau_depot']}")
 
     return resultat
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EXÉCUTION EN ARRIÈRE-PLAN (anciennement taches.py, fusionné ici)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def executer_analyse(app, historique_id: int, url: str):
+    """
+    Exécute le pipeline complet en arrière-plan et met à jour la BDD.
+
+    `app` est l'objet Flask, passé par app.py au moment de lancer le
+    thread (ce fichier n'importe jamais app.py).
+    """
+    with app.app_context():
+        historique = db.session.get(Historique, historique_id)
+        if not historique:
+            return
+
+        try:
+            resultat = pipeline_complet(url)
+
+            data_scanner = resultat["data_scanner"]
+            resultat_archi = resultat["resultat_archi"]
+            doc_globale = resultat["doc_globale"]
+            readme = resultat["readme"]
+            chemin_doc = resultat["chemin_doc"]
+            infos_ast = resultat["infos_ast"]
+            chemin_site_html = resultat.get("chemin_site_html")
+
+            tree_json = construire_tree_json(data_scanner, infos_ast)
+
+            historique.repo_name = data_scanner.get("repo_name", "Inconnu")
+            historique.author = data_scanner.get("author", "Inconnu")
+            historique.branch = data_scanner.get("branch", "Inconnue")
+            historique.commits = data_scanner.get("commits", 0)
+            historique.stars = data_scanner.get("stars", 0)
+            historique.description = data_scanner.get("description", "")
+            historique.licence = data_scanner.get("licence", "Non spécifiée")
+            historique.fichiers_count = len(data_scanner.get("fichiers", []))
+            historique.langages = json.dumps(data_scanner.get("langages", []))
+            historique.architecture = resultat_archi.get("architecture")
+            historique.confiance_architecture = resultat_archi.get("confiance")
+            historique.resume_ia = extraire_resume(readme)
+            historique.documentation_preview = doc_globale
+            historique.chemin_doc = chemin_doc
+            historique.tree_json = json.dumps(tree_json)
+            historique.chemin_site_html = chemin_site_html
+            historique.statut = "termine"
+
+            db.session.commit()
+            logger.info(f"Analyse terminée : {historique.repo_name}")
+
+        except Exception as e:
+            logger.exception(f"Erreur pipeline pour historique {historique_id}")
+            historique.statut = "erreur"
+            historique.message_erreur = str(e)
+            db.session.commit()

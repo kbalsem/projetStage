@@ -12,7 +12,6 @@ import os
 import re
 from typing import Dict, List, Tuple
 
-from .prompts import PROMPT_FICHIER
 from utils.ollama_client import generer
 
 logger = logging.getLogger(__name__)

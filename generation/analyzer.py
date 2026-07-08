@@ -8,7 +8,7 @@ Utilise tree-sitter pour parser le code et extraire classes, fonctions, imports.
 import os
 import logging
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 logger = logging.getLogger(__name__)
 

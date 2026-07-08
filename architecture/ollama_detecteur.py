@@ -9,7 +9,7 @@ d'architecture logicielle quand le scoring automatique est incertain.
 import json
 import logging
 import os
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from utils.ollama_client import generer
 

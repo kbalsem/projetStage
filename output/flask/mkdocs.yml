@@ -1,0 +1,144 @@
+site_name: flask
+nav:
+- Accueil: index.md
+- Vue d'ensemble: global.md
+- Architecture: architecture.md
+- Fichiers:
+  - docs:
+    - conf: fichiers/docs/conf.md
+    - index: fichiers/docs/index.md
+  - examples:
+    - celery:
+      - src:
+        - task_app:
+          - __init__: fichiers/examples/celery/src/task_app/__init__.md
+          - index: fichiers/examples/celery/src/task_app/index.md
+          - tasks: fichiers/examples/celery/src/task_app/tasks.md
+          - views: fichiers/examples/celery/src/task_app/views.md
+      - index: fichiers/examples/celery/index.md
+      - make_celery: fichiers/examples/celery/make_celery.md
+    - javascript:
+      - js_example:
+        - __init__: fichiers/examples/javascript/js_example/__init__.md
+        - index: fichiers/examples/javascript/js_example/index.md
+        - views: fichiers/examples/javascript/js_example/views.md
+    - tutorial:
+      - flaskr:
+        - __init__: fichiers/examples/tutorial/flaskr/__init__.md
+        - auth: fichiers/examples/tutorial/flaskr/auth.md
+        - blog: fichiers/examples/tutorial/flaskr/blog.md
+        - db: fichiers/examples/tutorial/flaskr/db.md
+        - index: fichiers/examples/tutorial/flaskr/index.md
+  - src:
+    - flask:
+      - json:
+        - __init__: fichiers/src/flask/json/__init__.md
+        - index: fichiers/src/flask/json/index.md
+        - provider: fichiers/src/flask/json/provider.md
+        - tag: fichiers/src/flask/json/tag.md
+      - sansio:
+        - app: fichiers/src/flask/sansio/app.md
+        - blueprints: fichiers/src/flask/sansio/blueprints.md
+        - index: fichiers/src/flask/sansio/index.md
+        - scaffold: fichiers/src/flask/sansio/scaffold.md
+      - __init__: fichiers/src/flask/__init__.md
+      - __main__: fichiers/src/flask/__main__.md
+      - app: fichiers/src/flask/app.md
+      - blueprints: fichiers/src/flask/blueprints.md
+      - cli: fichiers/src/flask/cli.md
+      - config: fichiers/src/flask/config.md
+      - ctx: fichiers/src/flask/ctx.md
+      - debughelpers: fichiers/src/flask/debughelpers.md
+      - globals: fichiers/src/flask/globals.md
+      - helpers: fichiers/src/flask/helpers.md
+      - index: fichiers/src/flask/index.md
+      - logging: fichiers/src/flask/logging.md
+      - sessions: fichiers/src/flask/sessions.md
+      - signals: fichiers/src/flask/signals.md
+      - templating: fichiers/src/flask/templating.md
+      - testing: fichiers/src/flask/testing.md
+      - typing: fichiers/src/flask/typing.md
+      - views: fichiers/src/flask/views.md
+      - wrappers: fichiers/src/flask/wrappers.md
+  - tests:
+    - examples:
+      - javascript:
+        - tests:
+          - conftest: fichiers/tests/examples/javascript/tests/conftest.md
+          - index: fichiers/tests/examples/javascript/tests/index.md
+          - test_js_example: fichiers/tests/examples/javascript/tests/test_js_example.md
+      - tutorial:
+        - tests:
+          - conftest: fichiers/tests/examples/tutorial/tests/conftest.md
+          - index: fichiers/tests/examples/tutorial/tests/index.md
+          - test_auth: fichiers/tests/examples/tutorial/tests/test_auth.md
+          - test_blog: fichiers/tests/examples/tutorial/tests/test_blog.md
+          - test_db: fichiers/tests/examples/tutorial/tests/test_db.md
+          - test_factory: fichiers/tests/examples/tutorial/tests/test_factory.md
+    - tests:
+      - test_apps:
+        - blueprintapp:
+          - apps:
+            - admin:
+              - __init__: fichiers/tests/tests/test_apps/blueprintapp/apps/admin/__init__.md
+              - index: fichiers/tests/tests/test_apps/blueprintapp/apps/admin/index.md
+            - frontend:
+              - __init__: fichiers/tests/tests/test_apps/blueprintapp/apps/frontend/__init__.md
+              - index: fichiers/tests/tests/test_apps/blueprintapp/apps/frontend/index.md
+            - __init__: fichiers/tests/tests/test_apps/blueprintapp/apps/__init__.md
+            - index: fichiers/tests/tests/test_apps/blueprintapp/apps/index.md
+          - __init__: fichiers/tests/tests/test_apps/blueprintapp/__init__.md
+          - index: fichiers/tests/tests/test_apps/blueprintapp/index.md
+        - cliapp:
+          - inner1:
+            - inner2:
+              - __init__: fichiers/tests/tests/test_apps/cliapp/inner1/inner2/__init__.md
+              - flask: fichiers/tests/tests/test_apps/cliapp/inner1/inner2/flask.md
+              - index: fichiers/tests/tests/test_apps/cliapp/inner1/inner2/index.md
+            - __init__: fichiers/tests/tests/test_apps/cliapp/inner1/__init__.md
+            - index: fichiers/tests/tests/test_apps/cliapp/inner1/index.md
+          - __init__: fichiers/tests/tests/test_apps/cliapp/__init__.md
+          - app: fichiers/tests/tests/test_apps/cliapp/app.md
+          - factory: fichiers/tests/tests/test_apps/cliapp/factory.md
+          - importerrorapp: fichiers/tests/tests/test_apps/cliapp/importerrorapp.md
+          - index: fichiers/tests/tests/test_apps/cliapp/index.md
+          - multiapp: fichiers/tests/tests/test_apps/cliapp/multiapp.md
+        - helloworld:
+          - hello: fichiers/tests/tests/test_apps/helloworld/hello.md
+          - index: fichiers/tests/tests/test_apps/helloworld/index.md
+          - wsgi: fichiers/tests/tests/test_apps/helloworld/wsgi.md
+        - subdomaintestmodule:
+          - __init__: fichiers/tests/tests/test_apps/subdomaintestmodule/__init__.md
+          - index: fichiers/tests/tests/test_apps/subdomaintestmodule/index.md
+      - type_check:
+        - index: fichiers/tests/tests/type_check/index.md
+        - typing_app_decorators: fichiers/tests/tests/type_check/typing_app_decorators.md
+        - typing_error_handler: fichiers/tests/tests/type_check/typing_error_handler.md
+        - typing_route: fichiers/tests/tests/type_check/typing_route.md
+      - conftest: fichiers/tests/tests/conftest.md
+      - index: fichiers/tests/tests/index.md
+      - test_appctx: fichiers/tests/tests/test_appctx.md
+      - test_async: fichiers/tests/tests/test_async.md
+      - test_basic: fichiers/tests/tests/test_basic.md
+      - test_blueprints: fichiers/tests/tests/test_blueprints.md
+      - test_cli: fichiers/tests/tests/test_cli.md
+      - test_config: fichiers/tests/tests/test_config.md
+      - test_converters: fichiers/tests/tests/test_converters.md
+      - test_helpers: fichiers/tests/tests/test_helpers.md
+      - test_instance_config: fichiers/tests/tests/test_instance_config.md
+      - test_json: fichiers/tests/tests/test_json.md
+      - test_json_tag: fichiers/tests/tests/test_json_tag.md
+      - test_logging: fichiers/tests/tests/test_logging.md
+      - test_regression: fichiers/tests/tests/test_regression.md
+      - test_reqctx: fichiers/tests/tests/test_reqctx.md
+      - test_request: fichiers/tests/tests/test_request.md
+      - test_session_interface: fichiers/tests/tests/test_session_interface.md
+      - test_signals: fichiers/tests/tests/test_signals.md
+      - test_subclassing: fichiers/tests/tests/test_subclassing.md
+      - test_templating: fichiers/tests/tests/test_templating.md
+      - test_testing: fichiers/tests/tests/test_testing.md
+      - test_user_error_handler: fichiers/tests/tests/test_user_error_handler.md
+      - test_views: fichiers/tests/tests/test_views.md
+- API REST: api.md
+theme:
+  name: material

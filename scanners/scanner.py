@@ -9,7 +9,7 @@ import stat
 import gc
 import logging
 from shutil import rmtree
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from constants import (
     FICHIERS_STRATEGIQUES, EXTENSIONS_AST,
